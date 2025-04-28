@@ -1,6 +1,6 @@
 // API Configuration
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? 'http://localhost:3010' 
+    ? 'http://localhost:3011' 
     : '';  // Production URL (same origin)
 
 // DOM Elements
@@ -212,6 +212,79 @@ function updateProgress(status, logData) {
     let currentStep = null;
     let completedSteps = [];
     
+    // Populate the logs container with detailed information
+    const logsContainer = document.getElementById('progress-logs-container');
+    
+    // Clear the logs container and add the initial entry
+    if (Array.isArray(logData) && logData.length > 0) {
+        logsContainer.innerHTML = ''; // Clear previous logs
+        
+        // Sort logs by timestamp if available
+        const sortedLogs = [...logData].sort((a, b) => {
+            if (a.timestamp && b.timestamp) {
+                return new Date(a.timestamp) - new Date(b.timestamp);
+            }
+            return 0; // Keep original order if no timestamps
+        });
+        
+        // Add each log entry to the UI with appropriate styling
+        sortedLogs.forEach(entry => {
+            // Determine log type based on content
+            let logType = 'info';
+            if (entry.step.includes('Error') || entry.error) {
+                logType = 'error';
+            } else if (entry.step.includes('Validation') || entry.step.includes('Cross-Validation')) {
+                if (entry.data && entry.data.match === false) {
+                    logType = 'warning';
+                } else if (entry.data && entry.data.match === true) {
+                    logType = 'success';
+                }
+            } else if (entry.step.includes('Complete')) {
+                logType = 'success';
+            }
+            
+            // Format the timestamp if available
+            let timestamp = '';
+            if (entry.timestamp) {
+                const date = new Date(entry.timestamp);
+                timestamp = `<span class="timestamp">${date.toLocaleTimeString()}</span>`;
+            }
+            
+            // Format the message based on step and data
+            let message = `<span class="step">${entry.step}:</span>`;
+            
+            if (entry.error) {
+                message += ` Error: ${entry.error}`;
+            } else if (entry.message) {
+                message += ` ${entry.message}`;
+            } else if (entry.data) {
+                if (typeof entry.data === 'string') {
+                    message += ` ${entry.data}`;
+                } else if (entry.step === 'Company Name Comparison') {
+                    message += ` Website: "${entry.data.website_name}" vs Companies House: "${entry.data.companies_house_name}" (Match: ${entry.data.match ? 'Yes' : 'No'}, Similarity: ${entry.data.similarity_score})`;
+                } else if (entry.step === 'Website CRN Validation') {
+                    message += ` ${entry.data.crn_found ? `Found CRN: ${entry.data.crn_found}` : 'No CRN found on website'}`;
+                } else if (entry.step === 'CRN Cross-Validation') {
+                    message += ` Website CRN: ${entry.data.website_crn}, Companies House CRN: ${entry.data.api_crn} (Match: ${entry.data.match ? 'Yes' : 'No'})`;
+                } else if (entry.step === 'Additional AI Request') {
+                    message += ` ${entry.data.message}`;
+                } else if (entry.step === 'Additional AI Response') {
+                    message += ` ${entry.data.crn ? `Found alternative CRN: ${entry.data.crn}` : 'No alternative CRN found'}`;
+                }
+            }
+            
+            // Create and add the log entry element
+            const logEntry = document.createElement('p');
+            logEntry.className = `log-entry ${logType}`;
+            logEntry.innerHTML = `${timestamp}${message}`;
+            logsContainer.appendChild(logEntry);
+            
+            // Scroll to the bottom to show latest logs
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        });
+    }
+    
+    // Existing code to determine progress steps
     if (Array.isArray(logData)) {
         // Check the log entries to determine progress
         for (const entry of logData) {
@@ -228,6 +301,41 @@ function updateProgress(status, logData) {
             } else if (entry.step === 'New Company GPT Result') {
                 // Retrying with new company name
                 currentStep = 'crn';
+            } else if (entry.step === 'Website CRN Validation' || entry.step === 'CRN Cross-Validation' || entry.step === 'Company Name Comparison') {
+                // Show validation is happening
+                completedSteps.push('crn', 'company_details');
+                currentStep = 'website';
+                
+                // Add detailed status for website step
+                const websiteStepEl = progressSteps['website'].element.querySelector('.status');
+                if (websiteStepEl) {
+                    if (entry.step === 'Website CRN Validation') {
+                        websiteStepEl.textContent = 'Validating CRN on website...';
+                    } else if (entry.step === 'CRN Cross-Validation') {
+                        if (entry.data && entry.data.match) {
+                            websiteStepEl.textContent = 'CRN validated ✓';
+                            websiteStepEl.className = 'status completed';
+                        } else {
+                            websiteStepEl.textContent = 'CRN validation warning';
+                            websiteStepEl.className = 'status error';
+                        }
+                    } else if (entry.step === 'Company Name Comparison') {
+                        if (entry.data && entry.data.match) {
+                            websiteStepEl.textContent = 'Company name validated ✓';
+                            websiteStepEl.className = 'status completed';
+                        } else {
+                            websiteStepEl.textContent = 'Company name mismatch';
+                            websiteStepEl.className = 'status error';
+                        }
+                    }
+                }
+            } else if (entry.step === 'Additional AI Request' || entry.step === 'Additional AI Response') {
+                // Additional AI requests for company name mismatch
+                const websiteStepEl = progressSteps['website'].element.querySelector('.status');
+                if (websiteStepEl) {
+                    websiteStepEl.textContent = 'Validating alternative company name...';
+                    websiteStepEl.className = 'status processing';
+                }
             } else if (entry.step.includes('Officers') || entry.step.includes('Beneficial Owners')) {
                 // Working on officers and PSC
                 completedSteps.push('crn', 'company_details');
@@ -298,27 +406,102 @@ function updateProgress(status, logData) {
 }
 
 function showResults(data) {
+    // Add debug logs to understand the data structure
+    console.log("Received data in showResults:", data);
+    
+    // Try to find the result object in different possible locations
+    let resultData = null;
+    
+    if (data.result) {
+        console.log("Found data.result");
+        resultData = data.result;
+    } else if (data.log_entries && data.log_entries.length > 0) {
+        // Try to find the completion entry in log_entries
+        console.log("Searching in log_entries...");
+        for (const entry of data.log_entries) {
+            if (entry.step === 'Completed' && entry.result) {
+                console.log("Found completion entry with result");
+                resultData = entry.result;
+                break;
+            }
+        }
+    }
+    
+    console.log("Using resultData:", resultData);
+    
+    // Use resultData if found, otherwise fallback to original data
+    const displayData = resultData || data;
+    
     // Populate result fields
-    if (typeof data === 'object') {
+    if (typeof displayData === 'object') {
+        // Company request name
         document.getElementById('result-company-name').textContent = currentBusinessName;
-        document.getElementById('result-company-name-value').textContent = data.company_name || 'N/A';
-        document.getElementById('result-crn').textContent = data.company_registration_number || 'N/A';
-        document.getElementById('result-company-type').textContent = data.company_type || 'N/A';
-        document.getElementById('result-company-status').textContent = data.company_status || 'N/A';
-        document.getElementById('result-incorporation-date').textContent = data.incorporation_date || 'N/A';
+        
+        // Main company details
+        document.getElementById('result-company-name-value').textContent = displayData.company_name || 'N/A';
+        document.getElementById('result-crn').textContent = displayData.company_registration_number || 'N/A';
+        document.getElementById('result-company-type').textContent = displayData.company_type || 'N/A';
+        document.getElementById('result-company-status').textContent = displayData.company_status || 'N/A';
+        document.getElementById('result-incorporation-date').textContent = displayData.incorporation_date || 'N/A';
+        document.getElementById('result-jurisdiction').textContent = displayData.jurisdiction || 'N/A';
+
+        // Business details
+        if (displayData.business) {
+            document.getElementById('result-business-age').textContent = displayData.business.businessAge || 'N/A';
+            document.getElementById('result-business-category').textContent = displayData.business.category || 'N/A';
+        } else {
+            document.getElementById('result-business-age').textContent = 'N/A';
+            document.getElementById('result-business-category').textContent = 'N/A';
+        }
+
+        // SIC codes
+        if (displayData.sicCodes && displayData.sicCodes.length > 0) {
+            document.getElementById('result-sic-codes').textContent = displayData.sicCodes.join(', ');
+        } else if (displayData.nature_of_business && displayData.nature_of_business.length > 0) {
+            document.getElementById('result-sic-codes').textContent = displayData.nature_of_business.join(', ');
+        } else {
+            document.getElementById('result-sic-codes').textContent = 'N/A';
+        }
         
         // Website - make it a link if available
         const websiteElement = document.getElementById('result-website');
-        if (data.website_url) {
-            websiteElement.innerHTML = `<a href="${data.website_url}" target="_blank" rel="noopener noreferrer">${data.website_url}</a>`;
+        if (displayData.website_url) {
+            websiteElement.innerHTML = `<a href="${displayData.website_url}" target="_blank" rel="noopener noreferrer">${displayData.website_url}</a>`;
         } else {
             websiteElement.textContent = 'N/A';
+        }
+
+        // Companies House profile link
+        const chProfileElement = document.getElementById('result-ch-profile');
+        if (displayData.companies_house_profile_url) {
+            chProfileElement.innerHTML = `<a href="${displayData.companies_house_profile_url}" target="_blank" rel="noopener noreferrer">${displayData.companies_house_profile_url}</a>`;
+        } else {
+            chProfileElement.textContent = 'N/A';
+        }
+        
+        // Previous Company Names
+        if (displayData.raw_data && 
+            displayData.raw_data.companies_house_profile && 
+            displayData.raw_data.companies_house_profile.previous_company_names && 
+            displayData.raw_data.companies_house_profile.previous_company_names.length > 0) {
+            
+            const previousNamesSection = document.getElementById('previous-names-section');
+            const previousNamesElement = document.getElementById('result-previous-names');
+            previousNamesSection.classList.remove('hidden');
+            previousNamesElement.innerHTML = '';
+            
+            displayData.raw_data.companies_house_profile.previous_company_names.forEach(prevName => {
+                const nameElement = document.createElement('div');
+                nameElement.className = 'list-item';
+                nameElement.innerHTML = `<strong>${prevName.name}</strong> (${prevName.effective_from} to ${prevName.ceased_on})`;
+                previousNamesElement.appendChild(nameElement);
+            });
         }
         
         // Format address
         const addressElement = document.getElementById('result-registered-address');
-        if (data.registered_address) {
-            const addr = data.registered_address;
+        if (displayData.registered_address) {
+            const addr = displayData.registered_address;
             const addressParts = [
                 addr.address_line_1,
                 addr.address_line_2,
@@ -332,13 +515,196 @@ function showResults(data) {
         } else {
             addressElement.textContent = 'N/A';
         }
+
+        // Business/Operational address
+        const businessAddressElement = document.getElementById('result-business-address');
+        if (displayData.business_address) {
+            const addr = displayData.business_address;
+            const addressParts = [
+                addr.address_line_1,
+                addr.address_line_2,
+                addr.locality,
+                addr.region,
+                addr.postal_code,
+                addr.country
+            ].filter(Boolean);
+            
+            businessAddressElement.textContent = addressParts.join(', ');
+        } else {
+            businessAddressElement.textContent = 'Same as registered address';
+        }
+
+        // Contact Information
+        document.getElementById('result-phone').textContent = displayData.contact_phone || 'N/A';
+        document.getElementById('result-email').textContent = displayData.contact_email || 'N/A';
+
+        // Additional company details
+        document.getElementById('result-has-insolvency').textContent = 
+            displayData.hasInsolvencyHistory || displayData.has_insolvency_history ? 'Yes' : 'No';
+        document.getElementById('result-has-charges').textContent = 
+            displayData.hasCharges || displayData.has_charges ? 'Yes' : 'No';
+        document.getElementById('result-can-file').textContent = 
+            displayData.canFile || displayData.can_file ? 'Yes' : 'No';
+
+        // Financial Information
+        if (displayData.raw_data && displayData.raw_data.companies_house_profile && displayData.raw_data.companies_house_profile.accounts) {
+            const accounts = displayData.raw_data.companies_house_profile.accounts;
+            
+            // Last accounts
+            if (accounts.last_accounts) {
+                document.getElementById('result-last-accounts-date').textContent = accounts.last_accounts.made_up_to || 'N/A';
+                document.getElementById('result-last-accounts-type').textContent = accounts.last_accounts.type || 'N/A';
+            } else {
+                document.getElementById('result-last-accounts-date').textContent = 'N/A';
+                document.getElementById('result-last-accounts-type').textContent = 'N/A';
+            }
+            
+            // Next accounts
+            document.getElementById('result-next-accounts-due').textContent = accounts.next_due || 'N/A';
+            
+            // Last full members list
+            document.getElementById('result-last-members-list').textContent = 
+                displayData.lastFullMembersListDate || displayData.last_full_members_list_date || 
+                (displayData.raw_data.companies_house_profile.last_full_members_list_date || 'N/A');
+            
+            // Confirmation statement
+            if (displayData.raw_data.companies_house_profile.confirmation_statement) {
+                const confStatement = displayData.raw_data.companies_house_profile.confirmation_statement;
+                document.getElementById('result-confirmation-statement-date').textContent = 
+                    confStatement.last_made_up_to || 'N/A';
+                document.getElementById('result-next-confirmation-due').textContent = 
+                    confStatement.next_due || 'N/A';
+            } else {
+                document.getElementById('result-confirmation-statement-date').textContent = 'N/A';
+                document.getElementById('result-next-confirmation-due').textContent = 'N/A';
+            }
+        } else {
+            document.getElementById('result-last-accounts-date').textContent = 'N/A';
+            document.getElementById('result-last-accounts-type').textContent = 'N/A';
+            document.getElementById('result-next-accounts-due').textContent = 'N/A';
+            document.getElementById('result-last-members-list').textContent = 'N/A';
+            document.getElementById('result-confirmation-statement-date').textContent = 'N/A';
+            document.getElementById('result-next-confirmation-due').textContent = 'N/A';
+        }
+        
+        // Display validation results
+        if (displayData.verification_details) {
+            // CRN validation
+            updateValidationItem(
+                'crn-validation',
+                displayData.verification_details.crn_validation.status,
+                displayData.verification_details.crn_validation.message
+            );
+            
+            // Set CRN values for comparison
+            document.getElementById('ch-crn-value').textContent = displayData.company_registration_number || 'N/A';
+            
+            const websiteCrnValue = document.getElementById('website-crn-value');
+            if (displayData.website_validation && displayData.website_validation.crn_found) {
+                websiteCrnValue.textContent = displayData.website_validation.crn_found;
+                
+                // Add match/mismatch styling
+                if (displayData.website_validation.crn_match) {
+                    websiteCrnValue.classList.add('match');
+                } else {
+                    websiteCrnValue.classList.add('mismatch');
+                }
+            } else {
+                websiteCrnValue.textContent = 'Not found';
+            }
+            
+            // Address validation
+            updateValidationItem(
+                'address-validation',
+                displayData.verification_details.address_validation.status,
+                displayData.verification_details.address_validation.message
+            );
+            
+            // Website data validation
+            updateValidationItem(
+                'website-validation',
+                displayData.verification_details.website_data.status,
+                displayData.verification_details.website_data.message
+            );
+            
+            // Display detailed website data if available
+            const websiteDataDetails = document.getElementById('website-data-details');
+            const websiteDataList = document.getElementById('website-data-list');
+            
+            if (displayData.website_validation && displayData.website_validation.scrape_data) {
+                websiteDataDetails.classList.remove('hidden');
+                websiteDataList.innerHTML = '';
+                
+                // Add all the found website data to the list
+                Object.entries(displayData.website_validation.scrape_data).forEach(([key, value]) => {
+                    if (value) {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `${key.replace(/_/g, ' ')}: ${value}`;
+                        websiteDataList.appendChild(listItem);
+                    }
+                });
+                
+                // If no data items were added, show a message
+                if (websiteDataList.children.length === 0) {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = 'No detailed website data available';
+                    websiteDataList.appendChild(listItem);
+                }
+            } else {
+                websiteDataDetails.classList.add('hidden');
+            }
+            
+            // Display validation issues if there are any
+            const validationIssues = document.getElementById('validation-issues');
+            const validationIssuesList = document.getElementById('validation-issues-list');
+            
+            // Check if we have validation issues
+            if (displayData.verification_status && displayData.verification_status.includes('warning') || 
+                (displayData.validation_issues && displayData.validation_issues.length > 0)) {
+                validationIssues.classList.remove('hidden');
+                validationIssuesList.innerHTML = '';
+                
+                // Add all validation issues to the list
+                if (displayData.validation_issues && displayData.validation_issues.length > 0) {
+                    displayData.validation_issues.forEach(issue => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = issue;
+                        validationIssuesList.appendChild(listItem);
+                    });
+                } 
+                // If CRN validation failed but no explicit issues listed
+                else if (displayData.verification_details.crn_validation.status === 'unverified' || 
+                        displayData.verification_details.crn_validation.status === 'pending') {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = displayData.verification_details.crn_validation.message;
+                    validationIssuesList.appendChild(listItem);
+                }
+                // If website data validation has issues
+                else if (displayData.verification_details.website_data.status !== 'verified') {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = displayData.verification_details.website_data.message;
+                    validationIssuesList.appendChild(listItem);
+                }
+                // Fallback if no specific issues found
+                else {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = 'Validation warning - some verification checks did not pass';
+                    validationIssuesList.appendChild(listItem);
+                }
+            } else {
+                validationIssues.classList.add('hidden');
+            }
+        } else {
+            // Handle legacy data format
+            hideValidationSection();
+        }
         
         // Officers
         const officersElement = document.getElementById('result-officers');
         officersElement.innerHTML = '';
         
-        if (data.directors && data.directors.length > 0) {
-            data.directors.forEach(officer => {
+        if (displayData.directors && displayData.directors.length > 0) {
+            displayData.directors.forEach(officer => {
                 const officerElement = document.createElement('div');
                 officerElement.className = 'list-item';
                 officerElement.textContent = officer;
@@ -352,8 +718,8 @@ function showResults(data) {
         const ownersElement = document.getElementById('result-owners');
         ownersElement.innerHTML = '';
         
-        if (data.beneficial_owners && data.beneficial_owners.length > 0) {
-            data.beneficial_owners.forEach(owner => {
+        if (displayData.beneficial_owners && displayData.beneficial_owners.length > 0) {
+            displayData.beneficial_owners.forEach(owner => {
                 const ownerElement = document.createElement('div');
                 ownerElement.className = 'list-item';
                 
@@ -363,6 +729,11 @@ function showResults(data) {
                 
                 const percentSpan = document.createElement('span');
                 percentSpan.textContent = ` - ${owner.ownership_percent || 'Ownership percentage not specified'}`;
+                
+                // Add date of birth if available
+                if (owner.date_of_birth) {
+                    percentSpan.textContent += ` (Born: ${owner.date_of_birth})`;
+                }
                 
                 ownerElement.appendChild(nameSpan);
                 ownerElement.appendChild(percentSpan);
@@ -378,10 +749,10 @@ function showResults(data) {
         const statusMessage = document.getElementById('verification-status-message');
         const statusContainer = document.querySelector('.verification-status');
         
-        if (data.verification_status && data.verification_status.includes('warning')) {
+        if (displayData.verification_status && displayData.verification_status.includes('warning')) {
             statusBadge.textContent = 'Warning';
             statusBadge.className = 'badge warning';
-            statusMessage.textContent = data.verification_status;
+            statusMessage.textContent = displayData.verification_status;
             statusContainer.className = 'verification-status warning';
         } else {
             statusBadge.textContent = 'Verified';
@@ -392,6 +763,33 @@ function showResults(data) {
     }
     
     showCard(verificationResults);
+}
+
+// Helper functions for validation display
+function updateValidationItem(id, status, message) {
+    const item = document.getElementById(id);
+    if (!item) return;
+    
+    const statusElement = item.querySelector('.validation-status');
+    const messageElement = item.querySelector('.validation-message');
+    
+    // Update status
+    statusElement.textContent = capitalizeFirstLetter(status);
+    statusElement.className = 'validation-status ' + status;
+    
+    // Update message
+    messageElement.textContent = message;
+}
+
+function hideValidationSection() {
+    const validationSection = document.querySelector('.result-section:nth-child(2)');
+    if (validationSection) {
+        validationSection.style.display = 'none';
+    }
+}
+
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 function showActionRequired(data) {

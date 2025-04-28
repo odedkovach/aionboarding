@@ -8,12 +8,18 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "body-parser": "^1.20.2",
-    "axios": "^1.4.0",
+    "axios": "^1.9.0",
+    "body-parser": "^1.20.3",
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "fs": "^0.0.1-security",
+    "node-html-parser": "^7.0.1",
     "openai": "^4.96.0",
-    "cheerio": "^1.0.0-rc.12",
-    "dotenv": "^16.3.1",
-    "cors": "^2.8.5"
+    "path": "^0.12.7",
+    "pdfkit": "^0.17.0",
+    "uuid": "^11.1.0"
   }
 }

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYB API Debug Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, button {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #4a69ff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #3451d4;
+        }
+        .result {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .debug-section {
+            margin-top: 20px;
+        }
+        pre {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .key-value {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        .key {
+            width: 200px;
+            font-weight: bold;
+        }
+        .value {
+            flex: 1;
+        }
+        .structure-tree {
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>KYB API Debug Tool</h1>
+    
+    <div class="container">
+        <div class="card">
+            <h2>Check Job Status</h2>
+            <div class="form-group">
+                <label for="job-id">Job ID:</label>
+                <input type="text" id="job-id" placeholder="Enter job ID">
+            </div>
+            <button id="check-status-btn">Check Status</button>
+            <button id="get-log-btn">Get Job Log</button>
+            
+            <div class="debug-section">
+                <h3>API Response Structure</h3>
+                <pre id="api-response"></pre>
+                
+                <h3>Key Fields</h3>
+                <div id="key-fields"></div>
+                
+                <h3>Path to Company Information</h3>
+                <div id="structure-tree"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Start New KYB Check</h2>
+            <div class="form-group">
+                <label for="business-name">Business Name:</label>
+                <input type="text" id="business-name" placeholder="Enter business name">
+            </div>
+            <button id="start-kyb-btn">Start KYB Check</button>
+            <div class="result" id="start-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // API URL configuration
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? `http://${window.location.hostname}:3011` 
+            : '';  // Production URL (same origin)
+        
+        // DOM elements
+        const jobIdInput = document.getElementById('job-id');
+        const checkStatusBtn = document.getElementById('check-status-btn');
+        const getLogBtn = document.getElementById('get-log-btn');
+        const apiResponsePre = document.getElementById('api-response');
+        const keyFieldsDiv = document.getElementById('key-fields');
+        const structureTreeDiv = document.getElementById('structure-tree');
+        const businessNameInput = document.getElementById('business-name');
+        const startKybBtn = document.getElementById('start-kyb-btn');
+        const startResultDiv = document.getElementById('start-result');
+        
+        // Event listeners
+        checkStatusBtn.addEventListener('click', checkJobStatus);
+        getLogBtn.addEventListener('click', getJobLog);
+        startKybBtn.addEventListener('click', startKybCheck);
+        
+        // Functions
+        async function checkJobStatus() {
+            const jobId = jobIdInput.value.trim();
+            if (!jobId) {
+                alert('Please enter a Job ID');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/jobStatus?job_id=${jobId}`);
+                const data = await response.json();
+                
+                displayApiResponse(data);
+                analyzeApiResponse(data);
+            } catch (error) {
+                apiResponsePre.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        async function getJobLog() {
+            const jobId = jobIdInput.value.trim();
+            if (!jobId) {
+                alert('Please enter a Job ID');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/jobLog?job_id=${jobId}`);
+                const data = await response.json();
+                
+                displayApiResponse(data);
+                analyzeApiResponse(data);
+            } catch (error) {
+                apiResponsePre.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        async function startKybCheck() {
+            const businessName = businessNameInput.value.trim();
+            if (!businessName) {
+                alert('Please enter a business name');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/startKYB`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ business_name: businessName })
+                });
+                
+                const data = await response.json();
+                startResultDiv.textContent = `Job started! Job ID: ${data.job_id}`;
+                jobIdInput.value = data.job_id;
+            } catch (error) {
+                startResultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        function displayApiResponse(data) {
+            apiResponsePre.textContent = JSON.stringify(data, null, 2);
+        }
+        
+        function analyzeApiResponse(data) {
+            // Clear previous data
+            keyFieldsDiv.innerHTML = '';
+            structureTreeDiv.innerHTML = '';
+            
+            // Add key fields
+            addKeyValuePair('status', data.status || 'N/A');
+            addKeyValuePair('job_id', data.job_id || 'N/A');
+            addKeyValuePair('created_at', data.created_at || 'N/A');
+            addKeyValuePair('last_updated', data.last_updated || 'N/A');
+            addKeyValuePair('requires_action', data.requires_action?.toString() || 'N/A');
+            addKeyValuePair('percent_complete', data.percent_complete?.toString() || 'N/A');
+            
+            // Analyze structure to find company information
+            if (data.result) {
+                addKeyValuePair('result exists', 'YES - company data is in data.result');
+                
+                // Add key company fields from result
+                const company = data.result;
+                addKeyValuePair('company_name', company.company_name || 'N/A');
+                addKeyValuePair('company_registration_number', company.company_registration_number || 'N/A');
+                addKeyValuePair('company_status', company.company_status || 'N/A');
+                
+                structureTreeDiv.innerHTML = `
+                    <p class="structure-tree">data</p>
+                    <p class="structure-tree">└── result</p>
+                    <p class="structure-tree">    ├── company_name: "${company.company_name || 'N/A'}"</p>
+                    <p class="structure-tree">    ├── company_registration_number: "${company.company_registration_number || 'N/A'}"</p>
+                    <p class="structure-tree">    └── other company fields...</p>
+                `;
+            } else if (data.log_entries && data.log_entries.length > 0) {
+                // Look for Completed entry in log_entries
+                let completedEntry = null;
+                for (const entry of data.log_entries) {
+                    if (entry.step === 'Completed' && entry.result) {
+                        completedEntry = entry;
+                        break;
+                    }
+                }
+                
+                if (completedEntry) {
+                    addKeyValuePair('Completed log entry exists', 'YES - company data is in log_entries[*].result');
+                    
+                    // Add key company fields from completed entry
+                    const company = completedEntry.result;
+                    addKeyValuePair('company_name', company.company_name || 'N/A');
+                    addKeyValuePair('company_registration_number', company.company_registration_number || 'N/A');
+                    addKeyValuePair('company_status', company.company_status || 'N/A');
+                    
+                    structureTreeDiv.innerHTML = `
+                        <p class="structure-tree">data</p>
+                        <p class="structure-tree">└── log_entries[*]</p>
+                        <p class="structure-tree">    └── step: "Completed"</p>
+                        <p class="structure-tree">        └── result</p>
+                        <p class="structure-tree">            ├── company_name: "${company.company_name || 'N/A'}"</p>
+                        <p class="structure-tree">            ├── company_registration_number: "${company.company_registration_number || 'N/A'}"</p>
+                        <p class="structure-tree">            └── other company fields...</p>
+                    `;
+                } else {
+                    addKeyValuePair('Completed log entry', 'NO');
+                    structureTreeDiv.innerHTML = '<p>No completed log entry with result found</p>';
+                }
+            } else {
+                addKeyValuePair('result exists', 'NO');
+                addKeyValuePair('log_entries with Completed step', 'NO');
+                structureTreeDiv.innerHTML = '<p>Could not find company data in the response</p>';
+            }
+        }
+        
+        function addKeyValuePair(key, value) {
+            const div = document.createElement('div');
+            div.className = 'key-value';
+            
+            const keySpan = document.createElement('span');
+            keySpan.className = 'key';
+            keySpan.textContent = key + ':';
+            
+            const valueSpan = document.createElement('span');
+            valueSpan.className = 'value';
+            valueSpan.textContent = value;
+            
+            div.appendChild(keySpan);
+            div.appendChild(valueSpan);
+            keyFieldsDiv.appendChild(div);
+        }
+    </script>
+</body>
+</html> 

@@ -119,6 +119,14 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Detailed Progress Logs -->
+                <div class="progress-logs">
+                    <h3>Detailed Progress Logs</h3>
+                    <div id="progress-logs-container" class="logs-container">
+                        <p class="log-entry info">Starting verification process...</p>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -130,6 +138,13 @@
             </div>
             
             <div class="results-content">
+                <!-- Verification Status Banner -->
+                <div class="verification-status">
+                    <span id="verification-status-badge" class="badge">Verified</span>
+                    <p id="verification-status-message">All verification checks passed successfully</p>
+                </div>
+
+                <!-- Company Information -->
                 <div class="result-section">
                     <h3>Company Information</h3>
                     <div class="result-grid">
@@ -154,12 +169,39 @@
                             <span id="result-incorporation-date" class="value"></span>
                         </div>
                         <div class="result-item">
+                            <span class="label">Jurisdiction</span>
+                            <span id="result-jurisdiction" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Business Age</span>
+                            <span id="result-business-age" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">SIC Codes</span>
+                            <span id="result-sic-codes" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Business Category</span>
+                            <span id="result-business-category" class="value"></span>
+                        </div>
+                        <div class="result-item full-width">
                             <span class="label">Website</span>
                             <span id="result-website" class="value"></span>
+                        </div>
+                        <div class="result-item full-width">
+                            <span class="label">Companies House Profile</span>
+                            <span id="result-ch-profile" class="value"></span>
                         </div>
                     </div>
                 </div>
                 
+                <!-- Previous Company Names Section (if any) -->
+                <div id="previous-names-section" class="result-section hidden">
+                    <h3>Previous Company Names</h3>
+                    <div id="result-previous-names" class="result-list"></div>
+                </div>
+                
+                <!-- Address Information -->
                 <div class="result-section">
                     <h3>Address Information</h3>
                     <div class="result-grid">
@@ -167,16 +209,37 @@
                             <span class="label">Registered Address</span>
                             <span id="result-registered-address" class="value"></span>
                         </div>
+                        <div class="result-item full-width">
+                            <span class="label">Business/Operational Address</span>
+                            <span id="result-business-address" class="value"></span>
+                        </div>
                     </div>
                 </div>
                 
+                <!-- Contact Information -->
                 <div class="result-section">
-                    <h3>Officers</h3>
+                    <h3>Contact Information</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <span class="label">Phone</span>
+                            <span id="result-phone" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Email</span>
+                            <span id="result-email" class="value"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Directors Section -->
+                <div class="result-section">
+                    <h3>Directors</h3>
                     <div id="result-officers" class="result-list">
                         <!-- Will be populated by JavaScript -->
                     </div>
                 </div>
                 
+                <!-- Beneficial Owners Section -->
                 <div class="result-section">
                     <h3>Beneficial Owners</h3>
                     <div id="result-owners" class="result-list">
@@ -184,9 +247,111 @@
                     </div>
                 </div>
                 
-                <div class="verification-status">
-                    <span id="verification-status-badge" class="badge">Verified</span>
-                    <p id="verification-status-message">All verification checks passed successfully</p>
+                <!-- Account Information Section -->
+                <div class="result-section">
+                    <h3>Financial Information</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <span class="label">Last Accounts Date</span>
+                            <span id="result-last-accounts-date" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Last Accounts Type</span>
+                            <span id="result-last-accounts-type" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Next Accounts Due</span>
+                            <span id="result-next-accounts-due" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Last Members List Date</span>
+                            <span id="result-last-members-list" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Confirmation Statement Date</span>
+                            <span id="result-confirmation-statement-date" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Next Confirmation Statement Due</span>
+                            <span id="result-next-confirmation-due" class="value"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Validation Section -->
+                <div class="result-section">
+                    <h3>Validation Checks</h3>
+                    <div class="validation-grid">
+                        <div class="validation-item" id="crn-validation">
+                            <div class="validation-header">
+                                <span class="validation-title">CRN Validation</span>
+                                <span class="validation-status pending">Checking...</span>
+                            </div>
+                            <div class="validation-details">
+                                <div class="source-comparison">
+                                    <div class="source">
+                                        <span class="source-label">Companies House</span>
+                                        <span class="source-value" id="ch-crn-value"></span>
+                                    </div>
+                                    <div class="source">
+                                        <span class="source-label">Website</span>
+                                        <span class="source-value" id="website-crn-value">Not found</span>
+                                    </div>
+                                </div>
+                                <p class="validation-message" id="crn-validation-message"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="validation-item" id="address-validation">
+                            <div class="validation-header">
+                                <span class="validation-title">Address Validation</span>
+                                <span class="validation-status pending">Checking...</span>
+                            </div>
+                            <div class="validation-details">
+                                <p class="validation-message" id="address-validation-message"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="validation-item" id="website-validation">
+                            <div class="validation-header">
+                                <span class="validation-title">Website Data</span>
+                                <span class="validation-status pending">Checking...</span>
+                            </div>
+                            <div class="validation-details">
+                                <p class="validation-message" id="website-validation-message"></p>
+                                <!-- Add detailed website data section -->
+                                <div id="website-data-details" class="data-details hidden">
+                                    <h4>Found Website Data</h4>
+                                    <ul id="website-data-list" class="data-list"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add validation issues section -->
+                    <div id="validation-issues" class="data-details hidden">
+                        <h4>Validation Issues</h4>
+                        <ul id="validation-issues-list" class="data-list warning"></ul>
+                    </div>
+                </div>
+                
+                <!-- Additional Company Details -->
+                <div class="result-section">
+                    <h3>Additional Company Details</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <span class="label">Has Insolvency History</span>
+                            <span id="result-has-insolvency" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Has Charges</span>
+                            <span id="result-has-charges" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Can File</span>
+                            <span id="result-can-file" class="value"></span>
+                        </div>
+                    </div>
                 </div>
                 
                 <button id="start-new-verification" class="btn-primary">
