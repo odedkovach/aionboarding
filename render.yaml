@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: kyb-automation-api
+    env: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: node kyb.js
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: COMPANY_HOUSE_API_KEY
+        sync: false
+      - key: PORT
+        value: 3000
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: kyb-redis
+          property: connectionString
+
+  - type: redis
+    name: kyb-redis
+    ipAllowList: [] # Allow all IPs
+    plan: starter 
