@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Verification</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Company Verification</h1>
+            <p class="subtitle">Streamlined verification for UK private limited companies</p>
+        </header>
+        
+        <!-- Initial Search Form -->
+        <div id="search-form" class="card">
+            <div class="form-content">
+                <h2>Let's Start Verification</h2>
+                <p>Enter your company's registered business name</p>
+                
+                <div class="form-group">
+                    <label for="business_name">Business Name</label>
+                    <input type="text" id="business_name" placeholder="e.g. Acme Ltd" required>
+                </div>
+                
+                <button id="start-verification-btn" class="btn-primary">
+                    Start Verification
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+                
+                <p class="note">We'll verify your business using Companies House and other public data sources</p>
+            </div>
+            
+            <div class="illustration">
+                <div class="search-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6b8afd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </div>
+                <p>Instant verification for UK private limited companies</p>
+            </div>
+        </div>
+        
+        <!-- Verification Progress -->
+        <div id="verification-progress" class="card hidden">
+            <div class="progress-content">
+                <h2 id="verifying-title">Verifying <span id="company-name"></span></h2>
+                <p>We're gathering and verifying your company information</p>
+                
+                <div class="progress-track">
+                    <!-- Step 1 -->
+                    <div class="progress-step" data-step="crn">
+                        <div class="progress-indicator active">
+                            <div class="loading-spinner"></div>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Company Registration Number</h3>
+                            <p class="status">Processing...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2 -->
+                    <div class="progress-step" data-step="company_details">
+                        <div class="progress-indicator">
+                            <div class="step-number">2</div>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Company Details</h3>
+                            <p class="status">Waiting...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3 -->
+                    <div class="progress-step" data-step="officers">
+                        <div class="progress-indicator">
+                            <div class="step-number">3</div>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Officers & Person of Significant Control</h3>
+                            <p class="status">Waiting...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 4 -->
+                    <div class="progress-step" data-step="website">
+                        <div class="progress-indicator">
+                            <div class="step-number">4</div>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Website Information</h3>
+                            <p class="status">Waiting...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 5 -->
+                    <div class="progress-step" data-step="incorporation">
+                        <div class="progress-indicator">
+                            <div class="step-number">5</div>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Incorporation Document</h3>
+                            <p class="status">Waiting...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 6 -->
+                    <div class="progress-step" data-step="final">
+                        <div class="progress-indicator">
+                            <div class="step-number">6</div>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Final Verification</h3>
+                            <p class="status">Waiting...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Card -->
+        <div id="verification-results" class="card hidden">
+            <div class="results-header">
+                <h2>Verification Results</h2>
+                <p>Verification complete for <span id="result-company-name"></span></p>
+            </div>
+            
+            <div class="results-content">
+                <div class="result-section">
+                    <h3>Company Information</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <span class="label">Company Name</span>
+                            <span id="result-company-name-value" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">CRN</span>
+                            <span id="result-crn" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Company Type</span>
+                            <span id="result-company-type" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Status</span>
+                            <span id="result-company-status" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Incorporation Date</span>
+                            <span id="result-incorporation-date" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Website</span>
+                            <span id="result-website" class="value"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-section">
+                    <h3>Address Information</h3>
+                    <div class="result-grid">
+                        <div class="result-item full-width">
+                            <span class="label">Registered Address</span>
+                            <span id="result-registered-address" class="value"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-section">
+                    <h3>Officers</h3>
+                    <div id="result-officers" class="result-list">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="result-section">
+                    <h3>Beneficial Owners</h3>
+                    <div id="result-owners" class="result-list">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="verification-status">
+                    <span id="verification-status-badge" class="badge">Verified</span>
+                    <p id="verification-status-message">All verification checks passed successfully</p>
+                </div>
+                
+                <button id="start-new-verification" class="btn-primary">
+                    Verify Another Company
+                </button>
+            </div>
+        </div>
+        
+        <!-- Action Required Card -->
+        <div id="action-required" class="card hidden">
+            <div class="action-header">
+                <h2>Action Required</h2>
+                <p>We need additional information to complete verification</p>
+            </div>
+            
+            <div class="action-content">
+                <p id="action-message"></p>
+                
+                <div id="action-form" class="form-group">
+                    <!-- Will be dynamically populated based on required fields -->
+                </div>
+                
+                <button id="continue-verification-btn" class="btn-primary">
+                    Continue Verification
+                </button>
+            </div>
+        </div>
+        
+        <!-- Error Card -->
+        <div id="error-card" class="card hidden">
+            <div class="error-header">
+                <h2>Verification Error</h2>
+            </div>
+            
+            <div class="error-content">
+                <p id="error-message"></p>
+                <button id="try-again-btn" class="btn-primary">
+                    Try Again
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html> 

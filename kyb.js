@@ -11,6 +11,7 @@ const cheerio = require('cheerio');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const cors = require('cors');
 
 // Simple logging system
 const logs = [];
@@ -51,7 +52,10 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
+// Middleware
 app.use(bodyParser.json());
+app.use(cors()); // Enable CORS for all routes
+app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from /public
 
 // Add request logging middleware
 app.use((req, res, next) => {
@@ -884,10 +888,26 @@ const jobProcessors = {
   }
 };
 
+// Root endpoint to serve UI
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Create public directory if it doesn't exist
+if (!fs.existsSync(path.join(__dirname, 'public'))) {
+  fs.mkdirSync(path.join(__dirname, 'public'), { recursive: true });
+}
+
+// Create inc_docs directory if it doesn't exist
+if (!fs.existsSync(path.join(__dirname, 'inc_docs'))) {
+  fs.mkdirSync(path.join(__dirname, 'inc_docs'), { recursive: true });
+}
+
 // Start API server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`KYB API service running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Visit http://localhost:${PORT} to access the verification UI`);
 })
   .on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
