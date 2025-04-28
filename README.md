@@ -13,13 +13,10 @@ npm install
 ```
 OPENAI_API_KEY=your_openai_api_key
 COMPANY_HOUSE_API_KEY=your_companies_house_api_key
-REDIS_URL=redis://127.0.0.1:6379 (default)
 PORT=3010 (default)
 ```
 
-3. Make sure Redis is running (required for BullMQ)
-
-4. Start the server:
+3. Start the server:
 ```
 npm start
 ```
@@ -40,12 +37,7 @@ This project includes configuration for simple deployment to Render.com:
    - `OPENAI_API_KEY` - Your OpenAI API key
    - `COMPANY_HOUSE_API_KEY` - Your Companies House API key
    
-4. Render will automatically:
-   - Set up a web service for the API
-   - Create a managed Redis instance
-   - Link them together
-
-5. Once deployed, you can access your API at the URL provided by Render
+4. Once deployed, you can access your API at the URL provided by Render
 
 ## API Endpoints
 

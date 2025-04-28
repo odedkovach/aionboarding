@@ -1,15 +1,13 @@
 // KYB Automation API Service in Node.js
-// Full Implementation with Express.js, BullMQ for Jobs, and External Integrations
+// Full Implementation with Express.js and External Integrations
 
 // Import libraries
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const { Queue, Worker, QueueScheduler } = require('bullmq');
 const axios = require('axios');
 const OpenAI = require('openai');
 const cheerio = require('cheerio');
-const Redis = require('ioredis');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
@@ -47,19 +45,10 @@ function logMessage(type, message, data = null) {
 // Configuration (Environment Variables)
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const COMPANY_HOUSE_API_KEY = process.env.COMPANY_HOUSE_API_KEY;
-const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const PORT = process.env.PORT || 3000;
 
 // Initialize services
 const app = express();
-const redisOptions = { 
-  maxRetriesPerRequest: null,
-  tls: REDIS_URL.includes('rediss://') ? { rejectUnauthorized: false } : undefined
-};
-const redis = new Redis(REDIS_URL, redisOptions);
-const kybQueue = new Queue('kybQueue', { connection: redis });
-const scheduler = new QueueScheduler('kybQueue', { connection: redis });
-
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 app.use(bodyParser.json());
@@ -99,6 +88,40 @@ app.use((req, res, next) => {
 // In-memory storage (for simplicity)
 const jobStatus = {};
 const jobLogs = {};
+const jobQueue = [];
+let isProcessing = false;
+
+// Simple job processor function
+async function processNextJob() {
+  if (isProcessing || jobQueue.length === 0) return;
+  
+  isProcessing = true;
+  const job = jobQueue.shift();
+  
+  try {
+    console.log(`[${new Date().toISOString()}] Processing job ${job.id} for business "${job.business_name}"`);
+    
+    if (job.type === 'kybTask') {
+      await jobProcessors.kybTask(job);
+    } else if (job.type === 'kybContinue') {
+      await jobProcessors.kybContinue(job);
+    } else {
+      console.error(`[${new Date().toISOString()}] Unknown job type: ${job.type}`);
+    }
+  } catch (err) {
+    console.error(`[${new Date().toISOString()}] Error processing job: ${err.message}`);
+    jobStatus[job.id] = 'failed';
+    jobLogs[job.id].push({
+      step: 'Error',
+      timestamp: new Date().toISOString(),
+      error: err.message
+    });
+  } finally {
+    isProcessing = false;
+    // Process next job if available
+    processNextJob();
+  }
+}
 
 // POST /startKYB
 app.post('/startKYB', async (req, res) => {
@@ -107,8 +130,7 @@ app.post('/startKYB', async (req, res) => {
 
   const jobId = crypto.randomBytes(16).toString('hex');
   console.log(`[${new Date().toISOString()}] Creating new KYB job for "${business_name}" with ID: ${jobId}`);
-  await kybQueue.add('kybTask', { business_name, jobId });
-
+  
   jobStatus[jobId] = 'pending';
   jobLogs[jobId] = [
     {
@@ -117,6 +139,18 @@ app.post('/startKYB', async (req, res) => {
       data: { business_name }
     }
   ];
+  
+  // Add job to queue
+  jobQueue.push({
+    id: jobId,
+    type: 'kybTask',
+    business_name,
+  });
+  
+  // Start processing if not already processing
+  if (!isProcessing) {
+    processNextJob();
+  }
 
   return res.json({ job_id: jobId });
 });
@@ -164,65 +198,39 @@ app.post('/continueKYB', async (req, res) => {
   // Update job status to processing
   jobStatus[job_id] = 'processing';
   
-  // Check what information we now have and continue processing
-  try {
-    // Get the business name from the original job data
-    const businessName = jobLogs[job_id].find(log => log.step === 'Original Request')?.data?.business_name;
-    
-    // Resume processing based on what data was provided
-    if (additionalData.crn) {
-      // If CRN was provided, continue with Companies House lookups
-      console.log(`[${new Date().toISOString()}] [${job_id}] Continuing with provided CRN: ${additionalData.crn}`);
-      
-      // Add the job back to the queue with the new information
-      await kybQueue.add('kybContinue', { 
-        job_id,
-        business_name: businessName, 
-        crn: additionalData.crn,
-        additional_data: additionalData
-      });
-      
-      return res.json({ 
-        status: 'processing',
-        message: 'Job continuing with provided CRN' 
-      });
-    } 
-    else if (additionalData.website) {
-      // If website was provided
-      console.log(`[${new Date().toISOString()}] [${job_id}] Continuing with provided website: ${additionalData.website}`);
-      
-      // Add the job back to the queue with the new information
-      await kybQueue.add('kybContinue', { 
-        job_id,
-        business_name: businessName,
-        website: additionalData.website,
-        additional_data: additionalData
-      });
-      
-      return res.json({ 
-        status: 'processing',
-        message: 'Job continuing with provided website' 
-      });
-    }
-    else {
-      // Generic continuation with whatever data was provided
-      console.log(`[${new Date().toISOString()}] [${job_id}] Continuing with general additional data`);
-      
-      await kybQueue.add('kybContinue', { 
-        job_id,
-        business_name: businessName,
-        additional_data: additionalData
-      });
-      
-      return res.json({ 
-        status: 'processing',
-        message: 'Job continuing with provided information' 
-      });
-    }
-  } catch (err) {
-    console.error(`[${new Date().toISOString()}] [${job_id}] Error continuing job:`, err.message);
-    jobStatus[job_id] = 'action_required';
-    return res.status(500).json({ error: 'Failed to continue job: ' + err.message });
+  // Get the business name from the original job data
+  const businessName = jobLogs[job_id].find(log => log.step === 'Original Request')?.data?.business_name;
+  
+  // Add continuation job to queue
+  jobQueue.push({
+    id: job_id,
+    type: 'kybContinue',
+    business_name: businessName,
+    additionalData
+  });
+  
+  // Start processing if not already processing
+  if (!isProcessing) {
+    processNextJob();
+  }
+  
+  if (additionalData.crn) {
+    return res.json({ 
+      status: 'processing',
+      message: 'Job continuing with provided CRN' 
+    });
+  } 
+  else if (additionalData.website) {
+    return res.json({ 
+      status: 'processing',
+      message: 'Job continuing with provided website' 
+    });
+  }
+  else {
+    return res.json({ 
+      status: 'processing',
+      message: 'Job continuing with provided information' 
+    });
   }
 });
 
@@ -316,7 +324,7 @@ async function downloadIncorporationDocument(crn, jobId) {
 const jobProcessors = {
   // Process initial KYB requests
   async kybTask(job) {
-    const { business_name, jobId } = job.data;
+    const { id: jobId, business_name } = job;
 
     console.log(`[${new Date().toISOString()}] Starting KYB process for "${business_name}" (Job ID: ${jobId})`);
 
@@ -346,17 +354,17 @@ const jobProcessors = {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
         
-        const openaiPromise = openai.chat.completions.create({
-          model: 'gpt-4.1-2025-04-14',
-          messages: [{ 
-            role: 'user', 
-            content: openaiPrompt
-          }],
-          temperature: 0,
-          max_tokens: 500 // Limit response size
-        }, { signal: controller.signal });
-        
         try {
+          const openaiPromise = openai.chat.completions.create({
+            model: 'gpt-4.1-2025-04-14',
+            messages: [{ 
+              role: 'user', 
+              content: openaiPrompt
+            }],
+            temperature: 0,
+            max_tokens: 500 // Limit response size
+          }, { signal: controller.signal });
+          
           const gptResponse = await openaiPromise;
           aiText = gptResponse.choices[0].message.content;
           console.log(`[${new Date().toISOString()}] [${jobId}] OpenAI Response:`, {
@@ -529,94 +537,21 @@ const jobProcessors = {
       
       // Now we have a CRN to work with
       // Step 2: Fetch Company Details from Companies House
-      console.log(`[${new Date().toISOString()}] [${jobId}] Fetching company details for CRN: ${crn}`);
-      const companyData = await axios.get(`https://api.company-information.service.gov.uk/company/${crn}`, {
-        auth: { username: COMPANY_HOUSE_API_KEY, password: '' }
-      });
-      const companyProfile = companyData.data;
-      console.log(`[${new Date().toISOString()}] [${jobId}] Retrieved company profile for ${companyProfile.company_name}`);
-      jobLogs[jobId].push({ step: 'Companies House Profile', data: companyProfile });
-
-      // Step 3: Fetch Officers (Directors)
-      console.log(`[${new Date().toISOString()}] [${jobId}] Fetching company officers`);
-      const officersData = await axios.get(`https://api.company-information.service.gov.uk/company/${crn}/officers`, {
-        auth: { username: COMPANY_HOUSE_API_KEY, password: '' }
-      });
-      const officers = officersData.data.items.map(o => o.name);
-      console.log(`[${new Date().toISOString()}] [${jobId}] Found ${officers.length} officers`);
-
-      // Step 4: Fetch PSC (Beneficial Owners)
-      console.log(`[${new Date().toISOString()}] [${jobId}] Fetching persons with significant control`);
-      const pscData = await axios.get(`https://api.company-information.service.gov.uk/company/${crn}/persons-with-significant-control`, {
-        auth: { username: COMPANY_HOUSE_API_KEY, password: '' }
-      });
-      const owners = pscData.data.items.map(p => ({
-        name: p.name,
-        ownership_percent: p.percent_of_shares || '>25%',
-        date_of_birth: p.date_of_birth ? `${p.date_of_birth.year}-${p.date_of_birth.month}` : null
-      }));
-      console.log(`[${new Date().toISOString()}] [${jobId}] Found ${owners.length} beneficial owners`);
-
-      // Step 5: Scrape Website for Contact Details and validate
-      let phone = null;
-      let addressFromWebsite = null;
-      if (website) {
-        try {
-          const websiteResp = await axios.get(website);
-          const $ = cheerio.load(websiteResp.data);
-          const text = $('body').text();
-          const phoneMatch = text.match(/\+?\d[\d\s\-]{7,}\d/);
-          if (phoneMatch) phone = phoneMatch[0].trim();
-          const addressCandidate = $('address').text() || '';
-          if (addressCandidate.length > 10) addressFromWebsite = addressCandidate.trim();
-        } catch (e) {
-          jobLogs[jobId].push({ step: 'Website Scrape Failed', error: e.message });
-        }
-      }
-
-      // Step 6: Cross-Validate Address
-      const registeredAddress = `${companyProfile.registered_office_address.address_line_1 || ''} ${companyProfile.registered_office_address.locality || ''} ${companyProfile.registered_office_address.postal_code || ''}`;
-      const normalizedRegistered = normalizeAddress(registeredAddress);
-      const normalizedWebsite = addressFromWebsite ? normalizeAddress(addressFromWebsite) : null;
-
-      let addressMatch = false;
-      if (normalizedWebsite && normalizedRegistered.includes(normalizedWebsite)) {
-        addressMatch = true;
-      }
-
-      // Step 7: Download Incorporation Document
-      const incorporationDocumentUrl = await downloadIncorporationDocument(crn, jobId);
-
-      // Step 8: Compile Final KYB JSON
-      const result = {
-        company_name: companyProfile.company_name,
-        company_registration_number: crn,
-        company_status: companyProfile.company_status,
-        company_type: companyProfile.type,
-        incorporation_date: companyProfile.date_of_creation,
-        registered_address: companyProfile.registered_office_address,
-        business_address: addressFromWebsite || companyProfile.registered_office_address,
-        website_url: website,
-        contact_phone: phone,
-        nature_of_business: companyProfile.sic_codes,
-        beneficial_owners: owners,
-        directors: officers,
-        companies_house_profile_url: `https://find-and-update.company-information.service.gov.uk/company/${crn}`,
-        incorporation_document_url: incorporationDocumentUrl,
-        verification_status: addressMatch ? 'verified' : 'warning: address mismatch'
-      };
-
-      jobLogs[jobId] = result;
-      jobStatus[jobId] = 'completed';
+      return await this.processCRN(jobId, business_name, crn, website);
     } catch (err) {
       jobStatus[jobId] = 'failed';
-      jobLogs[jobId] = { error: err.message };
+      jobLogs[jobId].push({ 
+        step: 'Error',
+        timestamp: new Date().toISOString(),
+        error: err.message
+      });
+      console.error(`[${new Date().toISOString()}] [${jobId}] KYB process failed: ${err.message}`);
     }
   },
   
   // Process continued KYB requests with additional information
   async kybContinue(job) {
-    const { job_id, business_name, crn, website, additional_data } = job.data;
+    const { id: job_id, business_name, additionalData } = job;
     
     console.log(`[${new Date().toISOString()}] Continuing KYB process for job ${job_id}`);
     
@@ -624,8 +559,8 @@ const jobProcessors = {
       jobStatus[job_id] = 'processing';
       
       // If a new company_name is provided, restart the entire process with this name
-      if (additional_data.company_name && !crn) {
-        const newBusinessName = additional_data.company_name;
+      if (additionalData.company_name && !additionalData.crn) {
+        const newBusinessName = additionalData.company_name;
         console.log(`[${new Date().toISOString()}] [${job_id}] Restarting KYB process with new company name: ${newBusinessName}`);
         
         jobLogs[job_id].push({
@@ -791,11 +726,11 @@ const jobProcessors = {
         }
       }
       // If we have a CRN, we can skip directly to the Companies House API calls
-      else if (crn) {
-        return await this.processCRN(job_id, business_name, crn, website || additional_data.website);
+      else if (additionalData.crn) {
+        return await this.processCRN(job_id, business_name, additionalData.crn, additionalData.website);
       }
       // If we only have a website, try to extract company info from it
-      else if (website) {
+      else if (additionalData.website) {
         // Logic to process website information
         // For now, mark as action_required requesting a CRN as well
         console.log(`[${new Date().toISOString()}] [${job_id}] Website provided but CRN still needed`);
@@ -835,29 +770,29 @@ const jobProcessors = {
   },
   
   // Helper method to process CRN data
-  async processCRN(job_id, business_name, crn, website) {
-    console.log(`[${new Date().toISOString()}] [${job_id}] Processing CRN: ${crn}`);
+  async processCRN(jobId, business_name, crn, website) {
+    console.log(`[${new Date().toISOString()}] [${jobId}] Processing CRN: ${crn}`);
     
     try {
       // Step 2: Fetch Company Details from Companies House
-      console.log(`[${new Date().toISOString()}] [${job_id}] Fetching company details for CRN: ${crn}`);
+      console.log(`[${new Date().toISOString()}] [${jobId}] Fetching company details for CRN: ${crn}`);
       const companyData = await axios.get(`https://api.company-information.service.gov.uk/company/${crn}`, {
         auth: { username: COMPANY_HOUSE_API_KEY, password: '' }
       });
       const companyProfile = companyData.data;
-      console.log(`[${new Date().toISOString()}] [${job_id}] Retrieved company profile for ${companyProfile.company_name}`);
-      jobLogs[job_id].push({ step: 'Companies House Profile', data: companyProfile });
+      console.log(`[${new Date().toISOString()}] [${jobId}] Retrieved company profile for ${companyProfile.company_name}`);
+      jobLogs[jobId].push({ step: 'Companies House Profile', data: companyProfile });
       
       // Step 3: Fetch Officers (Directors)
-      console.log(`[${new Date().toISOString()}] [${job_id}] Fetching company officers`);
+      console.log(`[${new Date().toISOString()}] [${jobId}] Fetching company officers`);
       const officersData = await axios.get(`https://api.company-information.service.gov.uk/company/${crn}/officers`, {
         auth: { username: COMPANY_HOUSE_API_KEY, password: '' }
       });
       const officers = officersData.data.items.map(o => o.name);
-      console.log(`[${new Date().toISOString()}] [${job_id}] Found ${officers.length} officers`);
+      console.log(`[${new Date().toISOString()}] [${jobId}] Found ${officers.length} officers`);
       
       // Step 4: Fetch PSC (Beneficial Owners)
-      console.log(`[${new Date().toISOString()}] [${job_id}] Fetching persons with significant control`);
+      console.log(`[${new Date().toISOString()}] [${jobId}] Fetching persons with significant control`);
       const pscData = await axios.get(`https://api.company-information.service.gov.uk/company/${crn}/persons-with-significant-control`, {
         auth: { username: COMPANY_HOUSE_API_KEY, password: '' }
       });
@@ -866,11 +801,11 @@ const jobProcessors = {
         ownership_percent: p.percent_of_shares || '>25%',
         date_of_birth: p.date_of_birth ? `${p.date_of_birth.year}-${p.date_of_birth.month}` : null
       }));
-      console.log(`[${new Date().toISOString()}] [${job_id}] Found ${owners.length} beneficial owners`);
+      console.log(`[${new Date().toISOString()}] [${jobId}] Found ${owners.length} beneficial owners`);
       
       // Step A: Download Incorporation Document
-      console.log(`[${new Date().toISOString()}] [${job_id}] Attempting to download incorporation document`);
-      const incorporationDocumentUrl = await downloadIncorporationDocument(crn, job_id);
+      console.log(`[${new Date().toISOString()}] [${jobId}] Attempting to download incorporation document`);
+      const incorporationDocumentUrl = await downloadIncorporationDocument(crn, jobId);
       
       // Step B: Collect website info if available
       let phone = null;
@@ -878,7 +813,7 @@ const jobProcessors = {
       
       if (website) {
         try {
-          console.log(`[${new Date().toISOString()}] [${job_id}] Scraping website: ${website}`);
+          console.log(`[${new Date().toISOString()}] [${jobId}] Scraping website: ${website}`);
           const websiteResp = await axios.get(website, { timeout: 10000 });
           const $ = cheerio.load(websiteResp.data);
           const text = $('body').text();
@@ -887,13 +822,13 @@ const jobProcessors = {
           const addressCandidate = $('address').text() || '';
           if (addressCandidate.length > 10) addressFromWebsite = addressCandidate.trim();
           
-          console.log(`[${new Date().toISOString()}] [${job_id}] Website scrape results: `, {
+          console.log(`[${new Date().toISOString()}] [${jobId}] Website scrape results: `, {
             phone: phone || 'Not found',
             address: addressFromWebsite || 'Not found'
           });
         } catch (e) {
-          console.error(`[${new Date().toISOString()}] [${job_id}] Website scrape failed: ${e.message}`);
-          jobLogs[job_id].push({ step: 'Website Scrape Failed', error: e.message });
+          console.error(`[${new Date().toISOString()}] [${jobId}] Website scrape failed: ${e.message}`);
+          jobLogs[jobId].push({ step: 'Website Scrape Failed', error: e.message });
         }
       }
       
@@ -906,7 +841,7 @@ const jobProcessors = {
       
         if (normalizedWebsite && normalizedRegistered.includes(normalizedWebsite)) {
           addressMatch = true;
-          console.log(`[${new Date().toISOString()}] [${job_id}] Address validated: Website address matches registered address`);
+          console.log(`[${new Date().toISOString()}] [${jobId}] Address validated: Website address matches registered address`);
         }
       }
       
@@ -929,18 +864,14 @@ const jobProcessors = {
         verification_status: addressMatch ? 'verified' : 'warning: address mismatch'
       };
       
-      console.log(`[${new Date().toISOString()}] [${job_id}] KYB process completed successfully`);
-      jobLogs[job_id].push({
-        step: 'Final Result',
-        timestamp: new Date().toISOString(),
-        data: result
-      });
-      jobStatus[job_id] = 'completed';
+      console.log(`[${new Date().toISOString()}] [${jobId}] KYB process completed successfully`);
+      jobLogs[jobId] = result;
+      jobStatus[jobId] = 'completed';
       return true;
     } catch (err) {
-      console.error(`[${new Date().toISOString()}] [${job_id}] Error processing CRN: ${err.message}`);
-      jobStatus[job_id] = 'action_required';
-      jobLogs[job_id].push({
+      console.error(`[${new Date().toISOString()}] [${jobId}] Error processing CRN: ${err.message}`);
+      jobStatus[jobId] = 'action_required';
+      jobLogs[jobId].push({
         step: 'Action Required',
         timestamp: new Date().toISOString(),
         message: `Error processing CRN ${crn}: ${err.message}. Please provide a valid CRN.`,
@@ -953,23 +884,10 @@ const jobProcessors = {
   }
 };
 
-// Update worker to use job processors
-const worker = new Worker('kybQueue', async job => {
-  // Route to appropriate processor based on job name
-  const processorName = job.name;
-  
-  if (jobProcessors[processorName]) {
-    await jobProcessors[processorName](job);
-  } else {
-    console.error(`[${new Date().toISOString()}] Unknown job type: ${processorName}`);
-  }
-}, { connection: redis });
-
 // Start API server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`KYB API service running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Redis URL: ${REDIS_URL.replace(/redis:\/\/(.*)@/, 'redis://****@')}`); // Hide credentials
 })
   .on('error', (err) => {
     if (err.code === 'EADDRINUSE') {

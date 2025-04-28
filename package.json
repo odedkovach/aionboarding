@@ -8,13 +8,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "axios": "^1.4.0",
-    "body-parser": "^1.20.2",
-    "bullmq": "^1.91.1",
-    "cheerio": "^1.0.0-rc.12",
-    "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "ioredis": "^5.3.2",
-    "openai": "^4.96.0"
+    "body-parser": "^1.20.2",
+    "axios": "^1.4.0",
+    "openai": "^4.96.0",
+    "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^16.3.1"
   }
 }
