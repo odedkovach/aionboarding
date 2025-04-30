@@ -4,7 +4,7 @@ services:
     env: node
     plan: starter
     buildCommand: npm install
-    startCommand: node kyb.js
+    startCommand: node server.js
     envVars:
       - key: OPENAI_API_KEY
         sync: false
