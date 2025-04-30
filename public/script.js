@@ -901,4 +901,405 @@ function showCard(cardToShow) {
     
     // Show selected card
     cardToShow.classList.remove('hidden');
+}
+
+// Function to create a progress item with proper styling and animations
+function createProgressItem(step, title, description, isActive = false, isCompleted = false, isError = false) {
+    const progressItem = document.createElement('div');
+    progressItem.className = 'progress-item';
+    if (isActive) progressItem.classList.add('active');
+    if (isCompleted) progressItem.classList.add('completed');
+    if (isError) progressItem.classList.add('error');
+    
+    const icon = document.createElement('div');
+    icon.className = 'progress-icon';
+    
+    // Set appropriate icon content based on status
+    if (isCompleted) {
+        icon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12L10 17L19 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+    } else if (isError) {
+        icon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+    } else if (isActive) {
+        icon.innerHTML = `<svg class="spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-dasharray="62.83" stroke-dashoffset="0" stroke-linecap="round" />
+        </svg>`;
+    } else {
+        icon.textContent = step;
+    }
+    
+    const content = document.createElement('div');
+    content.className = 'progress-content';
+    
+    const titleEl = document.createElement('h3');
+    titleEl.textContent = title;
+    
+    const descriptionEl = document.createElement('p');
+    descriptionEl.textContent = description;
+    
+    content.appendChild(titleEl);
+    content.appendChild(descriptionEl);
+    
+    progressItem.appendChild(icon);
+    progressItem.appendChild(content);
+    
+    return progressItem;
+}
+
+// Update the checkJobStatus function to use the new progress item style
+function checkJobStatus(jobId) {
+    const progressContainer = document.getElementById('progress-container');
+    const statusMessage = document.getElementById('status-message');
+    const statusIcon = statusMessage.querySelector('.status-icon');
+    const statusText = statusMessage.querySelector('.status-text');
+    
+    // Clear existing progress items
+    progressContainer.innerHTML = '';
+    
+    // Add initial progress item
+    const initiatingItem = createProgressItem(1, 'Initiating Verification', 'Setting up the verification process...', true);
+    progressContainer.appendChild(initiatingItem);
+    
+    // Add placeholder progress items
+    const dataItem = createProgressItem(2, 'Data Collection', 'Collecting business information...');
+    const verifyItem = createProgressItem(3, 'Verification', 'Verifying collected information...');
+    const scrapingItem = createProgressItem(4, 'Website Analysis', 'Analyzing business website...');
+    const resultsItem = createProgressItem(5, 'Results Compilation', 'Compiling verification results...');
+    
+    progressContainer.appendChild(dataItem);
+    progressContainer.appendChild(verifyItem);
+    progressContainer.appendChild(scrapingItem);
+    progressContainer.appendChild(resultsItem);
+
+    // ... existing code ...
+
+    // Update the mock API polling to update progress items
+    let step = 1;
+    const pollInterval = setInterval(() => {
+        if (step >= 5) {
+            clearInterval(pollInterval);
+            document.getElementById('view-results').disabled = false;
+            
+            // Update status message
+            statusIcon.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 11.0857V12.0057C21.9988 14.1621 21.3005 16.2604 20.0093 17.9875C18.7182 19.7147 16.9033 20.9782 14.8354 21.5896C12.7674 22.201 10.5573 22.1276 8.53447 21.3803C6.51168 20.633 4.78465 19.2518 3.61096 17.4428C2.43727 15.6338 1.87979 13.4938 2.02168 11.342C2.16356 9.19029 2.99721 7.14205 4.39828 5.5028C5.79935 3.86354 7.69279 2.72111 9.79619 2.24587C11.8996 1.77063 14.1003 1.98806 16.07 2.86572" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M22 4L12 14.01L9 11.01" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>`;
+            statusText.textContent = 'Verification completed successfully!';
+            statusText.style.color = 'var(--success)';
+            document.querySelector('.status-message-container').style.borderLeftColor = 'var(--success)';
+            document.querySelector('.status-message-container').style.backgroundColor = 'rgba(16, 185, 129, 0.08)';
+            
+            // Update last progress item to completed
+            const allItems = progressContainer.querySelectorAll('.progress-item');
+            const lastItem = allItems[allItems.length - 1];
+            lastItem.classList.remove('active');
+            lastItem.classList.add('completed');
+            lastItem.querySelector('.progress-icon').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12L10 17L19 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>`;
+            
+            return;
+        }
+        
+        // Update progress items based on current step
+        const allItems = progressContainer.querySelectorAll('.progress-item');
+        
+        // Mark previous step as completed
+        if (step > 1) {
+            const prevItem = allItems[step - 2];
+            prevItem.classList.remove('active');
+            prevItem.classList.add('completed');
+            prevItem.querySelector('.progress-icon').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12L10 17L19 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>`;
+        }
+        
+        // Activate current step
+        const currentItem = allItems[step - 1];
+        currentItem.classList.add('active');
+        currentItem.querySelector('.progress-icon').innerHTML = `<svg class="spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-dasharray="62.83" stroke-dashoffset="0" stroke-linecap="round" />
+        </svg>`;
+        
+        // Update status message
+        const stepTitles = [
+            'Initiating verification...',
+            'Collecting business data...',
+            'Verifying business information...',
+            'Analyzing website content...',
+            'Compiling verification results...'
+        ];
+        
+        statusText.textContent = stepTitles[step - 1];
+        
+        step++;
+    }, 2500);
+}
+
+// Add autocomplete functionality
+// const businessNameInput = document.getElementById('business-name');
+const autocompleteResults = document.getElementById('autocomplete-results');
+
+// Mock company data for autocomplete
+const mockCompanies = [
+    { name: 'Acme Corporation', type: 'Corporation', location: 'New York, USA' },
+    { name: 'Stark Industries', type: 'Technology', location: 'California, USA' },
+    { name: 'Wayne Enterprises', type: 'Conglomerate', location: 'Gotham City, USA' },
+    { name: 'LexCorp', type: 'Technology', location: 'Metropolis, USA' },
+    { name: 'Umbrella Corporation', type: 'Pharmaceutical', location: 'Raccoon City, USA' },
+    { name: 'Cyberdyne Systems', type: 'Technology', location: 'Sunnyvale, USA' },
+    { name: 'Globex Corporation', type: 'Technology', location: 'Springfield, USA' },
+    { name: 'Initech', type: 'Software', location: 'Austin, USA' },
+    { name: 'Massive Dynamic', type: 'Research', location: 'Boston, USA' },
+    { name: 'Soylent Corp', type: 'Food Processing', location: 'New York, USA' }
+];
+
+businessNameInput.addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    
+    if (query.length < 2) {
+        autocompleteResults.classList.remove('show');
+        return;
+    }
+    
+    const matchedCompanies = mockCompanies.filter(company => 
+        company.name.toLowerCase().includes(query)
+    );
+    
+    if (matchedCompanies.length > 0) {
+        autocompleteResults.innerHTML = '';
+        
+        matchedCompanies.forEach(company => {
+            const item = document.createElement('div');
+            item.className = 'autocomplete-item';
+            
+            const title = document.createElement('div');
+            title.className = 'company-title';
+            title.textContent = company.name;
+            
+            const details = document.createElement('div');
+            details.className = 'company-details';
+            details.textContent = `${company.type} • ${company.location}`;
+            
+            item.appendChild(title);
+            item.appendChild(details);
+            
+            item.addEventListener('click', function() {
+                businessNameInput.value = company.name;
+                autocompleteResults.classList.remove('show');
+            });
+            
+            autocompleteResults.appendChild(item);
+        });
+        
+        autocompleteResults.classList.add('show');
+    } else {
+        autocompleteResults.classList.remove('show');
+    }
+});
+
+// Hide autocomplete when clicking outside
+document.addEventListener('click', function(e) {
+    if (e.target !== businessNameInput && !autocompleteResults.contains(e.target)) {
+        autocompleteResults.classList.remove('show');
+    }
+});
+
+// Add keyboard navigation for autocomplete
+businessNameInput.addEventListener('keydown', function(e) {
+    const items = autocompleteResults.querySelectorAll('.autocomplete-item');
+    
+    if (!items.length) return;
+    
+    const selected = autocompleteResults.querySelector('.selected');
+    
+    // Down arrow
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        
+        if (!selected) {
+            items[0].classList.add('selected');
+        } else {
+            selected.classList.remove('selected');
+            const next = selected.nextElementSibling || items[0];
+            next.classList.add('selected');
+        }
+    }
+    
+    // Up arrow
+    if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        
+        if (!selected) {
+            items[items.length - 1].classList.add('selected');
+        } else {
+            selected.classList.remove('selected');
+            const prev = selected.previousElementSibling || items[items.length - 1];
+            prev.classList.add('selected');
+        }
+    }
+    
+    // Enter key
+    if (e.key === 'Enter' && selected) {
+        e.preventDefault();
+        businessNameInput.value = selected.querySelector('.company-title').textContent;
+        autocompleteResults.classList.remove('show');
+    }
+    
+    // Escape key
+    if (e.key === 'Escape') {
+        autocompleteResults.classList.remove('show');
+    }
+});
+
+// Add mock data for results
+function populateResultsWithMockData() {
+    const businessName = document.getElementById('verifying-business-name').textContent;
+    
+    // Company information
+    document.getElementById('result-company-name').textContent = businessName;
+    document.getElementById('result-registration-number').textContent = generateRandomRegNumber();
+    document.getElementById('result-company-type').textContent = getRandomItem(['Corporation', 'LLC', 'Partnership', 'Sole Proprietorship']);
+    document.getElementById('result-company-age').textContent = getRandomItem(['5 years', '10 years', '18 years', '23 years', '7 years']);
+    document.getElementById('result-corporate-address').textContent = getRandomAddress();
+    document.getElementById('result-operational-address').textContent = getRandomAddress();
+    
+    // Business details
+    document.getElementById('result-company-email').textContent = `info@${businessName.toLowerCase().replace(/\s+/g, '')}.com`;
+    document.getElementById('result-phone-number').textContent = getRandomPhoneNumber();
+    document.getElementById('result-vat-number').textContent = generateRandomVatNumber();
+    document.getElementById('result-business-url').textContent = `https://www.${businessName.toLowerCase().replace(/\s+/g, '')}.com`;
+    document.getElementById('result-industry').textContent = getRandomItem(['Technology', 'Finance', 'Healthcare', 'Manufacturing', 'Retail', 'Transportation']);
+    document.getElementById('result-business-description').textContent = getRandomBusinessDescription(businessName);
+    
+    // Set website scraping status to complete
+    const scrapingStatus = document.getElementById('scraping-status');
+    scrapingStatus.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 11.0857V12.0057C21.9988 14.1621 21.3005 16.2604 20.0093 17.9875C18.7182 19.7147 16.9033 20.9782 14.8354 21.5896C12.7674 22.201 10.5573 22.1276 8.53447 21.3803C6.51168 20.633 4.78465 19.2518 3.61096 17.4428C2.43727 15.6338 1.87979 13.4938 2.02168 11.342C2.16356 9.19029 2.99721 7.14205 4.39828 5.5028C5.79935 3.86354 7.69279 2.72111 9.79619 2.24587C11.8996 1.77063 14.1003 1.98806 16.07 2.86572" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M22 4L12 14.01L9 11.01" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Website analysis completed successfully
+    `;
+    scrapingStatus.className = 'status-badge status-badge-success mb-4';
+    
+    // Add website scraping results
+    const websiteContainer = document.getElementById('website-scraping-container');
+    
+    const scrapingResults = document.createElement('div');
+    scrapingResults.className = 'results-grid';
+    
+    // Add some scraped data
+    addScrapingResult(scrapingResults, 'Domain Age', getRandomItem(['8 years', '12 years', '5 years', '15 years']));
+    addScrapingResult(scrapingResults, 'SSL Certificate', 'Valid (Expires in 10 months)');
+    addScrapingResult(scrapingResults, 'Social Media', getRandomSocialMedia());
+    addScrapingResult(scrapingResults, 'Technologies Used', getRandomTechnologies());
+    addScrapingResult(scrapingResults, 'Contact Information', getRandomContactInfo());
+    addScrapingResult(scrapingResults, 'Privacy Policy', getRandomItem(['Found', 'Not Found']));
+    
+    websiteContainer.appendChild(scrapingResults);
+}
+
+// Helper functions for mock data
+function getRandomItem(items) {
+    return items[Math.floor(Math.random() * items.length)];
+}
+
+function generateRandomRegNumber() {
+    return `REG-${Math.floor(Math.random() * 90000) + 10000}-${Math.floor(Math.random() * 90) + 10}`;
+}
+
+function getRandomAddress() {
+    const streetNumbers = [123, 456, 789, 101, 202];
+    const streetNames = ['Main St', 'Oak Avenue', 'Washington Blvd', 'First Street', 'Highland Drive'];
+    const cities = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'];
+    const states = ['NY', 'CA', 'IL', 'TX', 'AZ'];
+    const zips = ['10001', '90210', '60601', '77002', '85001'];
+    
+    return `${getRandomItem(streetNumbers)} ${getRandomItem(streetNames)}, ${getRandomItem(cities)}, ${getRandomItem(states)} ${getRandomItem(zips)}`;
+}
+
+function getRandomPhoneNumber() {
+    return `+1 (${Math.floor(Math.random() * 900) + 100}) ${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`;
+}
+
+function generateRandomVatNumber() {
+    return `VAT-${Math.floor(Math.random() * 90000) + 10000}`;
+}
+
+function getRandomBusinessDescription(name) {
+    const descriptions = [
+        `${name} is a leading provider of innovative solutions in the industry, focusing on customer satisfaction and technological advancement.`,
+        `Founded with a vision to transform the market, ${name} has been delivering exceptional products and services to clients worldwide.`,
+        `${name} specializes in developing cutting-edge technologies that help businesses streamline their operations and increase productivity.`,
+        `With a commitment to excellence, ${name} has established itself as a trusted partner for businesses looking to stay ahead of the competition.`,
+        `${name} combines creativity and technical expertise to deliver solutions that address the evolving needs of modern businesses.`
+    ];
+    
+    return getRandomItem(descriptions);
+}
+
+function getRandomSocialMedia() {
+    const platforms = ['LinkedIn', 'Twitter', 'Facebook', 'Instagram', 'YouTube'];
+    const count = Math.floor(Math.random() * 3) + 1;
+    
+    const selected = [];
+    for (let i = 0; i < count; i++) {
+        const platform = getRandomItem(platforms);
+        if (!selected.includes(platform)) {
+            selected.push(platform);
+        }
+    }
+    
+    return selected.join(', ');
+}
+
+function getRandomTechnologies() {
+    const techs = ['WordPress', 'React', 'Angular', 'Vue.js', 'PHP', 'Node.js', 'AWS', 'Google Analytics', 'Bootstrap'];
+    const count = Math.floor(Math.random() * 4) + 2;
+    
+    const selected = [];
+    for (let i = 0; i < count; i++) {
+        const tech = getRandomItem(techs);
+        if (!selected.includes(tech)) {
+            selected.push(tech);
+        }
+    }
+    
+    return selected.join(', ');
+}
+
+function getRandomContactInfo() {
+    return getRandomItem([
+        'Email, Phone, Contact Form',
+        'Email, Phone',
+        'Contact Form only',
+        'Email, Contact Form',
+        'Phone, Contact Form'
+    ]);
+}
+
+function addScrapingResult(container, label, value) {
+    const item = document.createElement('div');
+    item.className = 'result-item';
+    
+    const labelEl = document.createElement('div');
+    labelEl.className = 'result-label';
+    labelEl.textContent = label;
+    
+    const valueEl = document.createElement('div');
+    valueEl.className = 'result-value';
+    valueEl.textContent = value;
+    
+    item.appendChild(labelEl);
+    item.appendChild(valueEl);
+    
+    container.appendChild(item);
+    
+    // Add animation delay for staggered appearance
+    item.style.animation = `fadeIn 0.5s ease ${container.children.length * 0.1}s both`;
 } 

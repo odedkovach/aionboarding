@@ -7,9 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4f46e5;
+            --primary: #6366f1;
             --primary-light: #818cf8;
-            --primary-dark: #3730a3;
+            --primary-dark: #4f46e5;
+            --primary-color-light: #818cf8;
+            --primary-rgb: 99, 102, 241;
             --secondary: #10b981;
             --accent: #f43f5e;
             --background: #ffffff;
@@ -20,10 +22,12 @@
             --success: #10b981;
             --warning: #f59e0b;
             --error: #ef4444;
-            --radius: 12px;
+            --radius: 16px;
             --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 20px -2px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            --gradient-success: linear-gradient(135deg, var(--secondary) 0%, #059669 100%);
         }
 
         * {
@@ -38,36 +42,69 @@
             color: var(--text);
             line-height: 1.5;
             min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 25% 15%, rgba(99, 102, 241, 0.05) 0%, transparent 25%),
+                radial-gradient(circle at 75% 85%, rgba(16, 185, 129, 0.05) 0%, transparent 25%);
+            background-attachment: fixed;
         }
 
         .container {
             max-width: 1000px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 2rem 1.5rem;
         }
 
         header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
+            position: relative;
         }
 
         h1 {
             font-size: 2.5rem;
             font-weight: 700;
-            color: var(--primary);
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
             margin-bottom: 0.5rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 25%;
+            width: 50%;
+            height: 3px;
+            background: var(--gradient-primary);
+            border-radius: 3px;
         }
 
         .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            background-color: var(--primary-light);
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 1rem;
+            background: var(--gradient-primary);
             color: white;
             border-radius: 9999px;
             font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+            transition: all 0.3s ease;
+        }
+
+        .badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
+        }
+
+        .badge svg {
+            margin-right: 0.375rem;
         }
 
         /* Cards */
@@ -76,48 +113,73 @@
             border-radius: var(--radius);
             box-shadow: var(--shadow-md);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            backdrop-filter: blur(8px);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
         }
 
         .card-header {
-            padding: 1.5rem;
+            padding: 1.75rem;
             border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .card-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 25%;
+            height: 2px;
+            background: var(--gradient-primary);
         }
 
         .card-body {
-            padding: 1.5rem;
+            padding: 1.75rem;
         }
 
         .card-footer {
-            padding: 1.5rem;
+            padding: 1.5rem 1.75rem;
             border-top: 1px solid var(--border);
             text-align: right;
         }
 
         /* Form elements */
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.75rem;
+            position: relative;
         }
 
         label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
+            color: var(--text);
+            font-size: 0.9375rem;
         }
 
         input, select, textarea {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 0.875rem 1rem;
             border: 1px solid var(--border);
-            border-radius: 0.375rem;
+            border-radius: 0.5rem;
             font-family: inherit;
             font-size: 1rem;
+            transition: all 0.2s ease;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(4px);
         }
 
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+            background-color: white;
         }
 
         /* Buttons */
@@ -125,46 +187,96 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0.75rem 1.5rem;
-            font-weight: 500;
-            border-radius: 0.375rem;
+            padding: 0.875rem 1.75rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             border: none;
             font-size: 1rem;
+            position: relative;
+            overflow: hidden;
         }
 
         .btn-primary {
-            background-color: var(--primary);
+            background: var(--gradient-primary);
             color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
         }
 
         .btn-primary:hover {
-            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            transform: scale(0) translate(-50%, -50%);
+            transform-origin: 0 0;
+            opacity: 0;
+        }
+
+        .btn-primary:active::after {
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            0% { opacity: 1; transform: scale(0) translate(-50%, -50%); }
+            100% { opacity: 0; transform: scale(25) translate(-50%, -50%); }
         }
 
         .btn-primary:disabled {
             opacity: 0.7;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         /* Progress */
         .progress-container {
-            margin: 1.5rem 0;
+            margin: 1.75rem 0;
+            position: relative;
+        }
+
+        .progress-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 1.5rem;
+            width: 2px;
+            background: var(--border);
+            z-index: 0;
         }
 
         .progress-item {
             display: flex;
-            margin-bottom: 1rem;
-            padding: 1rem;
-            border-radius: 0.375rem;
+            margin-bottom: 1.25rem;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
             background-color: var(--surface);
             border-left: 4px solid var(--border);
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
         }
 
         .progress-item.active {
             border-left-color: var(--primary);
-            background-color: rgba(79, 70, 229, 0.05);
+            background-color: rgba(99, 102, 241, 0.05);
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         .progress-item.completed {
@@ -176,19 +288,62 @@
         }
 
         .progress-icon {
-            margin-right: 1rem;
+            margin-right: 1.25rem;
             flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .progress-item.active .progress-icon {
+            background: var(--primary);
+            border-color: var(--primary-light);
+            color: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
+
+        .progress-item.completed .progress-icon {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .progress-item.error .progress-icon {
+            background: var(--error);
+            border-color: var(--error);
+            color: white;
         }
 
         .progress-content {
             flex: 1;
         }
 
+        .progress-content h3 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+            color: var(--text);
+        }
+
+        .progress-content p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
         /* Results */
         .results-section {
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
+            margin-bottom: 2.5rem;
+            padding-bottom: 2rem;
             border-bottom: 1px solid var(--border);
+            animation: fadeIn 0.6s ease forwards;
         }
         
         .results-section:last-child {
@@ -203,28 +358,36 @@
         .results-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1rem;
+            gap: 1.25rem;
         }
 
         .result-item {
-            padding: 1rem;
-            border-radius: 0.375rem;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
             background-color: var(--surface);
             border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .result-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-light);
         }
 
         .result-label {
             font-size: 0.875rem;
             color: var(--text-secondary);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.375rem;
         }
 
         .result-value {
             font-weight: 500;
+            word-break: break-word;
         }
 
         .spinner {
-            animation: spin 1s linear infinite;
+            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
         }
 
         @keyframes spin {
@@ -239,11 +402,16 @@
 
         .section.active {
             display: block;
-            animation: fadeIn 0.3s ease forwards;
+            animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -251,10 +419,15 @@
         .status-badge {
             display: inline-flex;
             align-items: center;
-            padding: 0.25rem 0.75rem;
+            padding: 0.375rem 0.875rem;
             border-radius: 9999px;
             font-size: 0.75rem;
             font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .status-badge:hover {
+            transform: translateY(-2px);
         }
 
         .status-badge-success {
@@ -273,12 +446,12 @@
         }
 
         .status-badge-info {
-            background-color: rgba(79, 70, 229, 0.1);
+            background-color: rgba(99, 102, 241, 0.1);
             color: var(--primary);
         }
 
         .status-badge svg {
-            margin-right: 0.25rem;
+            margin-right: 0.375rem;
         }
 
         /* Utility classes */
@@ -291,11 +464,18 @@
 
         /* Add CSS for status message */
         .status-message-container {
-            background-color: var(--primary-light);
-            background-opacity: 0.1;
-            border-radius: 0.375rem;
-            padding: 0.75rem 1rem;
+            background-color: rgba(99, 102, 241, 0.08);
+            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
             border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.2); }
+            70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
         }
         
         .status-message {
@@ -304,7 +484,7 @@
         }
         
         .status-icon {
-            margin-right: 0.75rem;
+            margin-right: 0.875rem;
             color: var(--primary);
         }
         
@@ -329,17 +509,19 @@
             border-radius: 0 0 var(--radius) var(--radius);
             box-shadow: var(--shadow-md);
             display: none;
+            backdrop-filter: blur(8px);
         }
         
         .autocomplete-results.show {
             display: block;
+            animation: fadeIn 0.3s ease forwards;
         }
         
         .autocomplete-item {
-            padding: 0.75rem 1rem;
+            padding: 0.875rem 1rem;
             cursor: pointer;
             border-bottom: 1px solid var(--border);
-            transition: background 0.2s ease;
+            transition: all 0.2s ease;
         }
         
         .autocomplete-item:last-child {
@@ -352,30 +534,419 @@
         
         .company-title {
             font-weight: 500;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.375rem;
         }
         
         .company-details {
             font-size: 0.875rem;
             color: var(--text-secondary);
         }
+
+        /* AI Theme elements */
+        .ai-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            background-image: 
+                url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%236366f1' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E"),
+                radial-gradient(circle at 25% 15%, rgba(99, 102, 241, 0.05) 0%, transparent 25%),
+                radial-gradient(circle at 75% 85%, rgba(16, 185, 129, 0.05) 0%, transparent 25%);
+            opacity: 0.7;
+        }
+
+        .ai-dots {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background-image: radial-gradient(var(--primary-light) 1px, transparent 1px);
+            background-size: 12px 12px;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        .ai-circuit {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 180px;
+            height: 180px;
+            background-image: 
+                linear-gradient(to right, var(--primary-light) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--primary-light) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.15;
+            pointer-events: none;
+            transform: rotate(-8deg);
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            body {
+                padding: 0.5rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.75rem;
+            }
+            
+            .card-header, .card-body, .card-footer {
+                padding: 1.25rem;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .progress-item {
+                padding: 1rem;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 0.75rem 1.25rem;
+            }
+            
+            .ai-dots, .ai-circuit {
+                width: 100px;
+                height: 100px;
+            }
+        }
+
+        /* AI-themed elements and animations */
+        .ai-welcome-graphic {
+            position: relative;
+            height: 120px;
+            width: 120px;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ai-scanner-effect {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color-light), var(--secondary-color));
+            box-shadow: 0 0 25px rgba(var(--primary-rgb), 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+
+        .ai-scanner-effect::before {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            animation: scanEffect 2s infinite;
+        }
+
+        .ai-pulse-rings {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .pulse-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            animation: ringPulse 3s infinite;
+        }
+
+        .pulse-ring:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .pulse-ring:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.5);
+            }
+            50% {
+                transform: scale(1);
+                box-shadow: 0 0 25px rgba(var(--primary-rgb), 0.7);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.5);
+            }
+        }
+
+        @keyframes scanEffect {
+            0%, 100% {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            50% {
+                transform: translateY(20px);
+                opacity: 1;
+            }
+        }
+
+        @keyframes ringPulse {
+            0% {
+                transform: scale(0.5);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* Verification Features Styles */
+        .verification-features {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+        }
+
+        .feature-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 12px;
+            width: 31%;
+            background-color: rgba(var(--primary-rgb), 0.05);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-sm);
+            background-color: rgba(var(--primary-rgb), 0.1);
+        }
+
+        .feature-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-color-light);
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .feature-text {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* AI Process Animation */
+        .ai-process-animation {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            height: 100px;
+        }
+
+        .ai-brain {
+            position: relative;
+            width: 150px;
+            height: 80px;
+        }
+
+        .ai-node {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            animation: nodeGlow 2s infinite;
+        }
+
+        .ai-node:nth-child(1) {
+            top: 0;
+            left: 30px;
+            animation-delay: 0.1s;
+        }
+
+        .ai-node:nth-child(2) {
+            top: 10px;
+            right: 30px;
+            animation-delay: 0.3s;
+        }
+
+        .ai-node:nth-child(3) {
+            top: 35px;
+            left: 20px;
+            animation-delay: 0.5s;
+        }
+
+        .ai-node:nth-child(4) {
+            top: 50px;
+            right: 25px;
+            animation-delay: 0.7s;
+        }
+
+        .ai-node:nth-child(5) {
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            animation-delay: 0.9s;
+        }
+
+        .ai-connection {
+            position: absolute;
+            background-color: var(--primary-color-light);
+            height: 2px;
+            animation: connectionPulse 2s infinite linear;
+        }
+
+        .ai-connection:nth-child(6) {
+            width: 70px;
+            top: 5px;
+            left: 40px;
+            transform: rotate(15deg);
+            animation-delay: 0.2s;
+        }
+
+        .ai-connection:nth-child(7) {
+            width: 60px;
+            top: 30px;
+            left: 30px;
+            transform: rotate(-20deg);
+            animation-delay: 0.4s;
+        }
+
+        .ai-connection:nth-child(8) {
+            width: 70px;
+            top: 45px;
+            left: 40px;
+            transform: rotate(25deg);
+            animation-delay: 0.6s;
+        }
+
+        .ai-connection:nth-child(9) {
+            width: 40px;
+            bottom: 10px;
+            left: 50px;
+            transform: rotate(-30deg);
+            animation-delay: 0.8s;
+        }
+
+        @keyframes nodeGlow {
+            0% {
+                box-shadow: 0 0 0 rgba(var(--primary-rgb), 0.5);
+            }
+            50% {
+                box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.8);
+            }
+            100% {
+                box-shadow: 0 0 0 rgba(var(--primary-rgb), 0.5);
+            }
+        }
+
+        @keyframes connectionPulse {
+            0%, 100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .verification-features {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .feature-item {
+                width: 100%;
+                flex-direction: row;
+                justify-content: flex-start;
+                text-align: left;
+                padding: 10px;
+            }
+            
+            .feature-icon {
+                margin-bottom: 0;
+                margin-right: 12px;
+                width: 32px;
+                height: 32px;
+            }
+            
+            .ai-welcome-graphic {
+                height: 90px;
+                margin-bottom: 20px;
+            }
+            
+            .ai-scanner-effect {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .ai-scanner-effect::before {
+                width: 60px;
+                height: 60px;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="ai-backdrop"></div>
     <div class="container">
         <header>
+            <div class="ai-dots"></div>
             <h1>Business Verification</h1>
-            <span class="badge">Powered by AI</span>
+            <span class="badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L4 6V12C4 15.31 5.8 18.41 8.5 20.2L12 22L15.5 20.2C18.2 18.41 20 15.31 20 12V6L12 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 11C13.1046 11 14 10.1046 14 9C14 7.89543 13.1046 7 12 7C10.8954 7 10 7.89543 10 9C10 10.1046 10.8954 11 12 11Z" stroke="white" stroke-width="2"/>
+                    <path d="M12 11V14" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="17" r="1" fill="white"/>
+                </svg>
+                Powered by AI
+            </span>
+            <div class="ai-circuit"></div>
         </header>
 
         <!-- Welcome screen -->
         <section id="welcome-section" class="section active">
             <div class="card">
                 <div class="card-header">
-                    <h2>Welcome to Business Verification</h2>
-                    <p class="text-secondary">Enter your business name to start the verification process</p>
+                    <h2>Welcome to AI-Powered Business Verification</h2>
+                    <p class="text-secondary">Our advanced AI analyzes and verifies business information in seconds</p>
                 </div>
                 <div class="card-body">
+                    <div class="ai-welcome-graphic">
+                        <div class="ai-scanner-effect"></div>
+                        <div class="ai-pulse-rings">
+                            <div class="pulse-ring"></div>
+                            <div class="pulse-ring"></div>
+                            <div class="pulse-ring"></div>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label for="business-name">Business Name</label>
                         <div class="autocomplete-container">
@@ -383,9 +954,40 @@
                             <div id="autocomplete-results" class="autocomplete-results"></div>
                         </div>
                     </div>
+                    <div class="verification-features">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="feature-text">Verified Official Data</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 8L10.89 13.26C11.2187 13.4793 11.6049 13.5963 12 13.5963C12.3951 13.5963 12.7813 13.4793 13.11 13.26L21 8M5 19H19C20.1046 19 21 18.1046 21 17V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V17C3 18.1046 3.89543 19 5 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="feature-text">Digital Footprint Analysis</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 3.75H5.25C4.00736 3.75 3 4.75736 3 6V17.25C3 18.4926 4.00736 19.5 5.25 19.5H9M9 3.75H18.75C19.9926 3.75 21 4.75736 21 6V17.25C21 18.4926 19.9926 19.5 18.75 19.5H9M9 3.75V19.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="feature-text">UBO Verification</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-footer">
-                    <button id="start-verification" class="btn btn-primary">Start Verification</button>
+                    <button id="start-verification" class="btn btn-primary">
+                        Start AI Verification
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left: 8px;">
+                            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
         </section>
@@ -395,9 +997,24 @@
             <div class="card">
                 <div class="card-header">
                     <h2>Verifying <span id="verifying-business-name"></span></h2>
-                    <p class="text-secondary">We're collecting and verifying information about your business</p>
+                    <p class="text-secondary">Our AI is analyzing multiple data sources to verify your business</p>
                 </div>
                 <div class="card-body">
+                    <!-- AI animation container -->
+                    <div class="ai-process-animation">
+                        <div class="ai-brain">
+                            <div class="ai-node"></div>
+                            <div class="ai-node"></div>
+                            <div class="ai-node"></div>
+                            <div class="ai-node"></div>
+                            <div class="ai-node"></div>
+                            <div class="ai-connection"></div>
+                            <div class="ai-connection"></div>
+                            <div class="ai-connection"></div>
+                            <div class="ai-connection"></div>
+                        </div>
+                    </div>
+                    
                     <!-- Add status message section -->
                     <div class="status-message-container mb-4" id="status-message-container">
                         <div class="status-message" id="status-message">
@@ -498,21 +1115,13 @@
                                     <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
                                     <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
-                                <span>No website scraping data available</span>
+                                Waiting for website data...
                             </div>
-                            
-                            <!-- Alternative Websites Section -->
-                            <div id="alternative-websites" class="mb-4 hidden">
-                                <div class="mb-2">
-                                    <div class="result-label">Alternative Websites Found</div>
-                                    <div class="text-sm text-secondary">These additional websites were found during the search process.</div>
-                                </div>
-                                <div id="alternative-websites-list" class="p-3 border rounded bg-surface"></div>
-                            </div>
-                            
-                            <div class="results-grid" id="scraping-results">
-                                <!-- Scraping results will be added here dynamically -->
-                            </div>
+                            <div class="results-grid" id="scraping-results"></div>
+                        </div>
+                        <div id="alternative-websites" class="mb-4 mt-4 hidden">
+                            <h4 class="mb-2">Alternative Websites</h4>
+                            <div id="alternative-websites-list" class="p-3 border rounded bg-surface"></div>
                         </div>
                     </div>
 
