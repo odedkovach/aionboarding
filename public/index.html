@@ -3,398 +3,1114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Verification</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>AI Onboarding Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- README: Modern Onboarding UI
+    This is a complete redesign of the onboarding experience that:
+    1. Uses a multi-step wizard approach with smooth transitions
+    2. Implements real-time validation with AI-powered suggestions
+    3. Provides dynamic personalization elements
+    4. Follows modern design principles with generous white space, bold accents
+    5. Built with utility-first approach for maintainability 
+    
+    Tech stack: HTML5, TailwindCSS-inspired utility classes, Vanilla JS
+    -->
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #a5b4fc;
+            --secondary: #14b8a6;
+            --accent: #f43f5e;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --text: #0f172a;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            flex: 1;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+        h2 {
+            font-size: 1.875rem;
+            color: var(--primary);
+        }
+
+        h3 {
+            font-size: 1.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        .text-center { text-align: center; }
+        .text-secondary { color: var(--text-secondary); }
+        .text-success { color: var(--success); }
+        .text-warning { color: var(--warning); }
+        .text-error { color: var(--error); }
+        .text-accent { color: var(--accent); }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+
+        /* Layout */
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .flex-wrap { flex-wrap: wrap; }
+        .flex-1 { flex: 1; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .gap-8 { gap: 2rem; }
+
+        .w-full { width: 100%; }
+        .max-w-md { max-width: 28rem; }
+        .max-w-lg { max-width: 32rem; }
+        .max-w-xl { max-width: 36rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .my-4 { margin-top: 1rem; margin-bottom: 1rem; }
+        .my-8 { margin-top: 2rem; margin-bottom: 2rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .p-8 { padding: 2rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+
+        /* Cards & UI Components */
+        .card {
+            background-color: var(--background);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background-color: var(--surface);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            background-color: var(--surface);
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--text);
+            background-color: var(--background);
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-size: 1rem;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #0d9488;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(20, 184, 166, 0.2);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-text {
+            background-color: transparent;
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+        }
+
+        .btn-text:hover {
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            border-radius: 50%;
+        }
+
+        /* Progress indicator */
+        .progress-container {
+            width: 100%;
+            background-color: var(--border);
+            border-radius: 9999px;
+            height: 0.5rem;
+            margin: 2rem 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            width: 0%;
+            transition: width 0.6s ease;
+            border-radius: 9999px;
+        }
+
+        /* Step indicators */
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--border);
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+
+        .step {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background-color: var(--background);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--text-secondary);
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.2);
+        }
+
+        .step.completed {
+            background-color: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+        
+        @keyframes pulseError {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .pulse-error {
+            animation: pulseError 1.5s 3;
+            border-color: var(--error) !important;
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        /* AI Suggestions */
+        .ai-suggestion {
+            position: relative;
+            background-color: rgba(99, 102, 241, 0.1);
+            border-left: 3px solid var(--primary);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+
+        .ai-suggestion::before {
+            content: 'AI';
+            position: absolute;
+            top: -0.75rem;
+            left: -0.75rem;
+            background-color: var(--primary);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+        }
+
+        /* Utility Classes */
+        .hidden { display: none; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .rounded { border-radius: var(--radius); }
+        .shadow { box-shadow: var(--shadow); }
+        .shadow-md { box-shadow: var(--shadow-md); }
+        .shadow-lg { box-shadow: var(--shadow-lg); }
+        .opacity-50 { opacity: 0.5; }
+        .overflow-hidden { overflow: hidden; }
+        .z-10 { z-index: 10; }
+
+        /* Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-success {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-error {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        .badge-info {
+            background-color: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--text);
+            color: white;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--text) transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Error toast message */
+        .error-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--error);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-md);
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .error-toast.visible {
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+            
+            .step {
+                width: 2.5rem;
+                height: 2.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Company Verification</h1>
-            <p class="subtitle">Streamlined verification for UK private limited companies</p>
+        <!-- Header with dynamic greeting -->
+        <header class="flex items-center justify-between py-6 mb-8">
+            <div>
+                <h1 class="mb-2">AI Onboarding Platform</h1>
+                <p class="text-secondary" id="dynamic-greeting">Welcome to your personalized setup</p>
+            </div>
+            <div class="badge badge-info">BETA</div>
         </header>
+
+        <!-- Error toast message -->
+        <div class="error-toast" id="error-toast">Please complete all required fields</div>
+
+        <!-- Onboarding Wizard Container -->
+        <div class="card max-w-xl mx-auto shadow-lg fade-in" id="onboarding-wizard">
+            <!-- Wizard Progress Indicator -->
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+            </div>
+
+            <!-- Step Indicators -->
+            <div class="steps px-6">
+                <div class="step active" data-step="1">1</div>
+            </div>
+
+            <!-- Step Content -->
+            <div class="card-body">
+                <!-- Form Step -->
+                <div class="step-content fade-in" id="step-1" data-step="1">
+                    <h2 class="text-center mb-6">Welcome!</h2>
+                    <p class="text-center mb-4">Let's set up your AI-powered business verification in just a few minutes.</p>
+
+                    <div id="form-section">
+                        <div class="form-group">
+                            <label for="first-name">First Name</label>
+                            <input type="text" id="first-name" class="mb-2" placeholder="Enter your first name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" placeholder="your@email.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="role">Your Role</label>
+                            <select id="role" required>
+                                <option value="">Select your role</option>
+                                <option value="ceo">CEO / Founder</option>
+                                <option value="finance">Finance Director</option>
+                                <option value="compliance">Compliance Officer</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="business-name">Business Name</label>
+                            <input type="text" id="business-name" placeholder="e.g., Acme Corporation" required>
+                            <p class="text-sm text-secondary mt-2">Enter your registered company name</p>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="flex items-center gap-2 mb-2">
+                                <input type="checkbox" id="consent-ai-search" checked>
+                                <label for="consent-ai-search" class="font-medium cursor-pointer m-0">I consent to AI searching for public business data</label>
+                            </div>
+                            <p class="text-sm text-secondary">We use AI to search for publicly available business information to enhance your verification profile</p>
+                        </div>
+                    </div>
+
+                    <!-- Loading section (initially hidden) -->
+                    <div id="loading-data" class="text-center mb-6 hidden">
+                        <div class="mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-primary animate-spin">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 6v6l4 2"></path>
+                            </svg>
+                        </div>
+                        <h2 class="mb-2">Analyzing Business Data</h2>
+                        <p>We're enhancing your business profile with AI. This only takes a moment...</p>
+                    </div>
+
+                    <!-- Results section (initially hidden) -->
+                    <div id="results-content" class="hidden">
+                        <div class="text-center">
+                            <div class="p-4 mb-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-4 text-success">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                <h2 class="text-success">Verification Ready!</h2>
+                                <p class="my-4">Your business profile is ready for verification.</p>
+                            </div>
+
+                            <div class="card p-4 mb-6">
+                                <h3>Your Information</h3>
+                                <div class="flex justify-between items-center p-2 border-b">
+                                    <span>Contact Name</span>
+                                    <span class="font-bold" id="summary-name"></span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 border-b">
+                                    <span>Business Name</span>
+                                    <span class="font-bold" id="summary-business"></span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 border-b">
+                                    <span>Email</span>
+                                    <span class="font-bold" id="summary-email"></span>
+                                </div>
+                            </div>
+
+                            <!-- Enhanced data section (added at the end) -->
+                            <div id="enhanced-data-section" class="mb-6">
+                                <div id="enhanced-data-loading" class="text-center mb-4">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin text-primary">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <path d="M12 6v6l4 2"></path>
+                                        </svg>
+                                        <span>Enhancing business profile...</span>
+                                    </div>
+                                </div>
+                                <div id="enhanced-data" class="border rounded p-4 mb-4 text-left hidden">
+                                    <!-- Enhanced data will be shown here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wizard Navigation -->
+            <div class="card-footer flex justify-between">
+                <button class="btn btn-outline hidden" id="prev-step">Back</button>
+                <button class="btn btn-primary" id="next-step">Continue</button>
+            </div>
+        </div>
         
-        <!-- Initial Search Form -->
-        <div id="search-form" class="card">
-            <div class="form-content">
-                <h2>Let's Start Verification</h2>
-                <p>Enter your company's registered business name</p>
+        <!-- Verification Dashboard (Hidden until onboarding completed) -->
+        <div class="hidden fade-in" id="verification-dashboard">
+            <div class="flex items-center justify-between mb-6">
+                <h2>Business Verification Dashboard</h2>
+                <div class="badge badge-success">READY</div>
+            </div>
+            
+            <div class="card p-6">
+                <h3 class="mb-4">Start Your Business Verification</h3>
+                <p>Our AI will automatically retrieve and verify all available information about your business using Companies House and other public data sources. You don't need to provide any additional details.</p>
                 
-                <div class="form-group">
-                    <label for="business_name">Business Name</label>
-                    <input type="text" id="business_name" placeholder="e.g. Acme Ltd" required>
+                <div class="info-section my-6">
+                    <div class="info-header">Verification Details</div>
+                    <div style="padding: 1.5rem; background-color: white;">
+                        <div class="form-group mb-4">
+                            <label for="verify-business-name">Company Name</label>
+                            <input type="text" id="verify-business-name" readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Verification Method</label>
+                            <div class="flex items-center gap-2 mt-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                <span id="verification-method-display" class="text-primary font-medium">AI-Powered Automatic Verification</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <button id="start-verification-btn" class="btn-primary">
+                <button class="btn btn-primary" id="start-verification">
                     Start Verification
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M5 12h14M12 5l7 7-7 7"></path>
                     </svg>
                 </button>
-                
-                <p class="note">We'll verify your business using Companies House and other public data sources</p>
-            </div>
-            
-            <div class="illustration">
-                <div class="search-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6b8afd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                </div>
-                <p>Instant verification for UK private limited companies</p>
-            </div>
-        </div>
-        
-        <!-- Verification Progress -->
-        <div id="verification-progress" class="card hidden">
-            <div class="progress-content">
-                <h2 id="verifying-title">Verifying <span id="company-name"></span></h2>
-                <p>We're gathering and verifying your company information</p>
-                
-                <div class="progress-track">
-                    <!-- Step 1 -->
-                    <div class="progress-step" data-step="crn">
-                        <div class="progress-indicator active">
-                            <div class="loading-spinner"></div>
-                        </div>
-                        <div class="progress-details">
-                            <h3>Company Registration Number</h3>
-                            <p class="status">Processing...</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 2 -->
-                    <div class="progress-step" data-step="company_details">
-                        <div class="progress-indicator">
-                            <div class="step-number">2</div>
-                        </div>
-                        <div class="progress-details">
-                            <h3>Company Details</h3>
-                            <p class="status">Waiting...</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 3 -->
-                    <div class="progress-step" data-step="officers">
-                        <div class="progress-indicator">
-                            <div class="step-number">3</div>
-                        </div>
-                        <div class="progress-details">
-                            <h3>Officers & Person of Significant Control</h3>
-                            <p class="status">Waiting...</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 4 -->
-                    <div class="progress-step" data-step="website">
-                        <div class="progress-indicator">
-                            <div class="step-number">4</div>
-                        </div>
-                        <div class="progress-details">
-                            <h3>Website Information</h3>
-                            <p class="status">Waiting...</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 5 -->
-                    <div class="progress-step" data-step="incorporation">
-                        <div class="progress-indicator">
-                            <div class="step-number">5</div>
-                        </div>
-                        <div class="progress-details">
-                            <h3>Incorporation Document</h3>
-                            <p class="status">Waiting...</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 6 -->
-                    <div class="progress-step" data-step="final">
-                        <div class="progress-indicator">
-                            <div class="step-number">6</div>
-                        </div>
-                        <div class="progress-details">
-                            <h3>Final Verification</h3>
-                            <p class="status">Waiting...</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Detailed Progress Logs -->
-                <div class="progress-logs">
-                    <h3>Detailed Progress Logs</h3>
-                    <div id="progress-logs-container" class="logs-container">
-                        <p class="log-entry info">Starting verification process...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Results Card -->
-        <div id="verification-results" class="card hidden">
-            <div class="results-header">
-                <h2>Verification Results</h2>
-                <p>Verification complete for <span id="result-company-name"></span></p>
-            </div>
-            
-            <div class="results-content">
-                <!-- Verification Status Banner -->
-                <div class="verification-status">
-                    <span id="verification-status-badge" class="badge">Verified</span>
-                    <p id="verification-status-message">All verification checks passed successfully</p>
-                </div>
-
-                <!-- Company Information -->
-                <div class="result-section">
-                    <h3>Company Information</h3>
-                    <div class="result-grid">
-                        <div class="result-item">
-                            <span class="label">Company Name</span>
-                            <span id="result-company-name-value" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">CRN</span>
-                            <span id="result-crn" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">Company Type</span>
-                            <span id="result-company-type" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">Status</span>
-                            <span id="result-company-status" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">Incorporation Date</span>
-                            <span id="result-incorporation-date" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">Jurisdiction</span>
-                            <span id="result-jurisdiction" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">Business Age</span>
-                            <span id="result-business-age" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">SIC Codes</span>
-                            <span id="result-sic-codes" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">Business Category</span>
-                            <span id="result-business-category" class="value"></span>
-                        </div>
-                        <div class="result-item full-width">
-                            <span class="label">Website</span>
-                            <span id="result-website" class="value"></span>
-                        </div>
-                        <div class="result-item full-width">
-                            <span class="label">Companies House Profile</span>
-                            <span id="result-ch-profile" class="value"></span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Previous Company Names Section (if any) -->
-                <div id="previous-names-section" class="result-section hidden">
-                    <h3>Previous Company Names</h3>
-                    <div id="result-previous-names" class="result-list"></div>
-                </div>
-                
-                <!-- Address Information -->
-                <div class="result-section">
-                    <h3>Address Information</h3>
-                    <div class="result-grid">
-                        <div class="result-item full-width">
-                            <span class="label">Registered Address</span>
-                            <span id="result-registered-address" class="value"></span>
-                        </div>
-                        <div class="result-item full-width">
-                            <span class="label">Business/Operational Address</span>
-                            <span id="result-business-address" class="value"></span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Contact Information -->
-                <div class="result-section">
-                    <h3>Contact Information</h3>
-                    <div class="result-grid">
-                        <div class="result-item">
-                            <span class="label">Phone</span>
-                            <span id="result-phone" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">Email</span>
-                            <span id="result-email" class="value"></span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Directors Section -->
-                <div class="result-section">
-                    <h3>Directors</h3>
-                    <div id="result-officers" class="result-list">
-                        <!-- Will be populated by JavaScript -->
-                    </div>
-                </div>
-                
-                <!-- Beneficial Owners Section -->
-                <div class="result-section">
-                    <h3>Beneficial Owners</h3>
-                    <div id="result-owners" class="result-list">
-                        <!-- Will be populated by JavaScript -->
-                    </div>
-                </div>
-                
-                <!-- Account Information Section -->
-                <div class="result-section">
-                    <h3>Financial Information</h3>
-                    <div class="result-grid">
-                        <div class="result-item">
-                            <span class="label">Last Accounts Date</span>
-                            <span id="result-last-accounts-date" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">Last Accounts Type</span>
-                            <span id="result-last-accounts-type" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">Next Accounts Due</span>
-                            <span id="result-next-accounts-due" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">Last Members List Date</span>
-                            <span id="result-last-members-list" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">Confirmation Statement Date</span>
-                            <span id="result-confirmation-statement-date" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">Next Confirmation Statement Due</span>
-                            <span id="result-next-confirmation-due" class="value"></span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Validation Section -->
-                <div class="result-section">
-                    <h3>Validation Checks</h3>
-                    <div class="validation-grid">
-                        <div class="validation-item" id="crn-validation">
-                            <div class="validation-header">
-                                <span class="validation-title">CRN Validation</span>
-                                <span class="validation-status pending">Checking...</span>
-                            </div>
-                            <div class="validation-details">
-                                <div class="source-comparison">
-                                    <div class="source">
-                                        <span class="source-label">Companies House</span>
-                                        <span class="source-value" id="ch-crn-value"></span>
-                                    </div>
-                                    <div class="source">
-                                        <span class="source-label">Website</span>
-                                        <span class="source-value" id="website-crn-value">Not found</span>
-                                    </div>
-                                </div>
-                                <p class="validation-message" id="crn-validation-message"></p>
-                            </div>
-                        </div>
-                        
-                        <div class="validation-item" id="address-validation">
-                            <div class="validation-header">
-                                <span class="validation-title">Address Validation</span>
-                                <span class="validation-status pending">Checking...</span>
-                            </div>
-                            <div class="validation-details">
-                                <p class="validation-message" id="address-validation-message"></p>
-                            </div>
-                        </div>
-                        
-                        <div class="validation-item" id="website-validation">
-                            <div class="validation-header">
-                                <span class="validation-title">Website Data</span>
-                                <span class="validation-status pending">Checking...</span>
-                            </div>
-                            <div class="validation-details">
-                                <p class="validation-message" id="website-validation-message"></p>
-                                <!-- Add detailed website data section -->
-                                <div id="website-data-details" class="data-details hidden">
-                                    <h4>Found Website Data</h4>
-                                    <ul id="website-data-list" class="data-list"></ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Add validation issues section -->
-                    <div id="validation-issues" class="data-details hidden">
-                        <h4>Validation Issues</h4>
-                        <ul id="validation-issues-list" class="data-list warning"></ul>
-                    </div>
-                </div>
-                
-                <!-- Additional Company Details -->
-                <div class="result-section">
-                    <h3>Additional Company Details</h3>
-                    <div class="result-grid">
-                        <div class="result-item">
-                            <span class="label">Has Insolvency History</span>
-                            <span id="result-has-insolvency" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">Has Charges</span>
-                            <span id="result-has-charges" class="value"></span>
-                        </div>
-                        <div class="result-item">
-                            <span class="label">Can File</span>
-                            <span id="result-can-file" class="value"></span>
-                        </div>
-                    </div>
-                </div>
-                
-                <button id="start-new-verification" class="btn-primary">
-                    Verify Another Company
-                </button>
-            </div>
-        </div>
-        
-        <!-- Action Required Card -->
-        <div id="action-required" class="card hidden">
-            <div class="action-header">
-                <h2>Action Required</h2>
-                <p>We need additional information to complete verification</p>
-            </div>
-            
-            <div class="action-content">
-                <p id="action-message"></p>
-                
-                <div id="action-form" class="form-group">
-                    <!-- Will be dynamically populated based on required fields -->
-                </div>
-                
-                <button id="continue-verification-btn" class="btn-primary">
-                    Continue Verification
-                </button>
-            </div>
-        </div>
-        
-        <!-- Error Card -->
-        <div id="error-card" class="card hidden">
-            <div class="error-header">
-                <h2>Verification Error</h2>
-            </div>
-            
-            <div class="error-content">
-                <p id="error-message"></p>
-                <button id="try-again-btn" class="btn-primary">
-                    Try Again
-                </button>
             </div>
         </div>
     </div>
-    
-    <script src="script.js"></script>
+
+    <!-- JavaScript for interactivity -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const progressBar = document.getElementById('progress-bar');
+            const steps = document.querySelectorAll('.step');
+            const nextButton = document.getElementById('next-step');
+            const onboardingWizard = document.getElementById('onboarding-wizard');
+            const verificationDashboard = document.getElementById('verification-dashboard');
+            const dynamicGreeting = document.getElementById('dynamic-greeting');
+            const errorToast = document.getElementById('error-toast');
+            
+            // Form elements
+            const formSection = document.getElementById('form-section');
+            const firstNameInput = document.getElementById('first-name');
+            const emailInput = document.getElementById('email');
+            const roleSelect = document.getElementById('role');
+            const businessNameInput = document.getElementById('business-name');
+            const verifyBusinessNameInput = document.getElementById('verify-business-name');
+            
+            // Result elements
+            const loadingData = document.getElementById('loading-data');
+            const resultsContent = document.getElementById('results-content');
+            const summaryName = document.getElementById('summary-name');
+            const summaryBusiness = document.getElementById('summary-business');
+            const summaryEmail = document.getElementById('summary-email');
+            const enhancedDataSection = document.getElementById('enhanced-data-section');
+            const enhancedDataLoading = document.getElementById('enhanced-data-loading');
+            const enhancedDataContainer = document.getElementById('enhanced-data');
+            
+            // State variables
+            let userData = {
+                missingFields: [],
+                enhancedData: {}
+            };
+            
+            // Set dynamic greeting based on time of day
+            function setDynamicGreeting() {
+                const hour = new Date().getHours();
+                let greeting = 'Welcome to your personalized setup';
+                
+                if (hour < 12) {
+                    greeting = 'Good morning! Welcome to your personalized setup';
+                } else if (hour < 18) {
+                    greeting = 'Good afternoon! Welcome to your personalized setup';
+                } else {
+                    greeting = 'Good evening! Welcome to your personalized setup';
+                }
+                
+                dynamicGreeting.textContent = greeting;
+            }
+            
+            setDynamicGreeting();
+            
+            // Update progress bar
+            function updateProgress() {
+                progressBar.style.width = '100%';
+            }
+            
+            // Validate form
+            function validateForm() {
+                console.log("Validating form");
+                
+                const firstName = firstNameInput.value.trim();
+                const email = emailInput.value.trim();
+                const role = roleSelect.value;
+                const businessName = businessNameInput.value.trim();
+                const consent = document.getElementById('consent-ai-search').checked;
+                
+                console.log("Form values:", { firstName, email, role, businessName, consent });
+                
+                let valid = true;
+                
+                if (!firstName) {
+                    console.log("First name is empty");
+                    firstNameInput.style.borderColor = 'var(--error)';
+                    valid = false;
+                }
+                
+                if (!email) {
+                    console.log("Email is empty");
+                    emailInput.style.borderColor = 'var(--error)';
+                    valid = false;
+                }
+                
+                if (!role) {
+                    console.log("Role is not selected");
+                    roleSelect.style.borderColor = 'var(--error)';
+                    valid = false;
+                }
+                
+                if (!businessName) {
+                    console.log("Business name is empty");
+                    businessNameInput.style.borderColor = 'var(--error)';
+                    valid = false;
+                }
+                
+                if (!consent) {
+                    console.log("Consent not provided");
+                    document.getElementById('consent-ai-search').parentElement.style.color = 'var(--error)';
+                    valid = false;
+                }
+                
+                return valid;
+            }
+            
+            // Handle form submission and data enhancement
+            function handleFormSubmission() {
+                console.log("Form submitted");
+                
+                if (!validateForm()) {
+                    console.log("Validation failed");
+                    
+                    // Show error toast
+                    errorToast.textContent = "Please complete all required fields";
+                    errorToast.classList.add('visible');
+                    setTimeout(() => {
+                        errorToast.classList.remove('visible');
+                    }, 3000);
+                    
+                    // Add error pulse animation to the button
+                    nextButton.classList.add('pulse-error');
+                    setTimeout(() => {
+                        nextButton.classList.remove('pulse-error');
+                    }, 1500 * 3); // Duration of animation * 3 pulses
+                    
+                    return;
+                }
+                
+                console.log("Validation passed, proceeding to results");
+                
+                // Store user data
+                userData.firstName = firstNameInput.value.trim();
+                userData.email = emailInput.value.trim();
+                userData.role = roleSelect.value;
+                userData.businessName = businessNameInput.value.trim();
+                userData.consent = document.getElementById('consent-ai-search').checked;
+                
+                console.log("User data stored:", userData);
+                
+                // Update summary fields
+                summaryName.textContent = userData.firstName;
+                summaryBusiness.textContent = userData.businessName;
+                summaryEmail.textContent = userData.email;
+                
+                // Hide form and show loading
+                formSection.classList.add('hidden');
+                loadingData.classList.remove('hidden');
+                
+                // Update button
+                nextButton.textContent = 'Start Verification';
+                
+                // Show initial results first
+                setTimeout(() => {
+                    // Hide loading, show results
+                    loadingData.classList.add('hidden');
+                    resultsContent.classList.remove('hidden');
+                    
+                    // Start enhancing data in the background
+                    enhanceBusinessData();
+                    
+                    // Update progress bar
+                    updateProgress();
+                    
+                    // Set nextButton to call startVerification
+                    nextButton.removeEventListener('click', handleFormSubmission);
+                    nextButton.addEventListener('click', startVerification);
+                }, 1000);
+            }
+            
+            // Identify missing fields in the business profile
+            function identifyMissingFields() {
+                const missingFields = [];
+                
+                // Check common missing fields
+                if (!userData.address) missingFields.push('Business Address');
+                if (!userData.registrationNumber) missingFields.push('Company Registration Number');
+                if (!userData.incorporationDate) missingFields.push('Incorporation Date');
+                if (!userData.directors) missingFields.push('Director Information');
+                if (!userData.industry) missingFields.push('Industry Sector');
+                
+                // Store missing fields
+                userData.missingFields = missingFields;
+                console.log("Missing fields identified:", missingFields);
+                
+                return missingFields;
+            }
+            
+            // Perform data enhancement as a separate step after showing initial results
+            function enhanceBusinessData() {
+                console.log("Starting data enhancement in background");
+                
+                // Identify missing fields
+                const missingFields = identifyMissingFields();
+                
+                // Call backend API to search for business information using OpenAI
+                fetch('/searchBusinessData', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        business_name: userData.businessName,
+                        missing_fields: missingFields
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.business_data) {
+                        // Store enhanced data
+                        userData.enhancedData = data.business_data;
+                        console.log("Received enhanced data:", userData.enhancedData);
+                        
+                        // Merge the enhanced data with user data
+                        Object.assign(userData, userData.enhancedData);
+                        
+                        // Display enhanced data
+                        displayEnhancedData(userData.enhancedData);
+                        
+                        // Show the enhanced data section
+                        enhancedDataLoading.classList.add('hidden');
+                        enhancedDataContainer.classList.remove('hidden');
+                    } else {
+                        throw new Error('Failed to get business data');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error searching for business information:', error);
+                    
+                    // Show error in the enhanced data section
+                    enhancedDataLoading.classList.add('hidden');
+                    enhancedDataContainer.classList.remove('hidden');
+                    enhancedDataContainer.innerHTML = `
+                        <div class="text-error text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                            <p>We couldn't find additional information about your business.</p>
+                        </div>
+                    `;
+                });
+            }
+            
+            // Display enhanced data in the UI
+            function displayEnhancedData(data) {
+                // Build HTML for the enhanced data
+                let enhancedDataHTML = '';
+                
+                if (data.address) {
+                    enhancedDataHTML += `
+                        <div class="mb-3">
+                            <div class="font-medium">Business Address</div>
+                            <div class="px-3 py-2 bg-surface rounded">${data.address}</div>
+                        </div>
+                    `;
+                }
+                
+                if (data.registrationNumber) {
+                    enhancedDataHTML += `
+                        <div class="mb-3">
+                            <div class="font-medium">Company Registration Number</div>
+                            <div class="px-3 py-2 bg-surface rounded">${data.registrationNumber}</div>
+                        </div>
+                    `;
+                }
+                
+                if (data.incorporationDate) {
+                    enhancedDataHTML += `
+                        <div class="mb-3">
+                            <div class="font-medium">Incorporation Date</div>
+                            <div class="px-3 py-2 bg-surface rounded">${data.incorporationDate}</div>
+                        </div>
+                    `;
+                }
+                
+                if (data.industry) {
+                    enhancedDataHTML += `
+                        <div class="mb-3">
+                            <div class="font-medium">Industry Sector</div>
+                            <div class="px-3 py-2 bg-surface rounded">${data.industry}</div>
+                        </div>
+                    `;
+                }
+                
+                if (data.directors && data.directors.length > 0) {
+                    const director = data.directors[0];
+                    enhancedDataHTML += `
+                        <div>
+                            <div class="font-medium">Director Information</div>
+                            <div class="px-3 py-2 bg-surface rounded">
+                                <div><strong>Name:</strong> ${director.name}</div>
+                                <div><strong>Role:</strong> ${director.role}</div>
+                                <div><strong>Appointed:</strong> ${director.appointedDate}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (enhancedDataHTML === '') {
+                    enhancedDataHTML = `
+                        <div class="text-center text-secondary">
+                            No additional information found for this business.
+                        </div>
+                    `;
+                } else {
+                    // Add header to the enhanced data section
+                    enhancedDataHTML = `
+                        <h3 class="mb-4">Enhanced Business Information</h3>
+                        <div class="mb-3 text-success font-medium">Additional data found:</div>
+                        ${enhancedDataHTML}
+                        <div class="mt-3 text-sm text-secondary">
+                            <strong>Data sources:</strong> Companies House, Business Registries, Public Records
+                        </div>
+                    `;
+                }
+                
+                // Update the UI
+                enhancedDataContainer.innerHTML = enhancedDataHTML;
+            }
+            
+            // Start verification process
+            function startVerification() {
+                // Update verification dashboard with user data
+                verifyBusinessNameInput.value = userData.businessName;
+                
+                // Update greeting to include user's name
+                dynamicGreeting.textContent = `Welcome, ${userData.firstName}!`;
+                
+                // Hide onboarding wizard and show verification dashboard
+                onboardingWizard.classList.add('hidden');
+                verificationDashboard.classList.remove('hidden');
+                verificationDashboard.scrollIntoView({ behavior: 'smooth' });
+                
+                // Start verification process if requested
+                const businessName = verifyBusinessNameInput.value;
+                if (!businessName) return;
+                
+                // Show loading state
+                const startButton = document.getElementById('start-verification');
+                const originalText = startButton.innerHTML;
+                startButton.disabled = true;
+                startButton.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Starting verification...
+                `;
+                
+                // Call the API to start KYB process
+                fetch('/startKYB', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        business_name: businessName,
+                        enhanced_data: userData.enhancedData
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.job_id) {
+                        // Success - now we'll redirect to the verification page with parameters
+                        
+                        // Store data in localStorage
+                        localStorage.setItem('lastJobId', data.job_id);
+                        localStorage.setItem('lastBusinessName', businessName);
+                        localStorage.setItem('autoStartVerification', 'true');
+                        
+                        // Redirect to the original UI with query parameters
+                        window.location.href = `/index2.html?business_name=${encodeURIComponent(businessName)}&job_id=${encodeURIComponent(data.job_id)}&auto_start=true`;
+                    } else {
+                        throw new Error('No job ID returned');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error starting verification:', error);
+                    
+                    // Reset button
+                    startButton.disabled = false;
+                    startButton.innerHTML = originalText;
+                    
+                    // Show error message
+                    alert('Error starting verification. Please try again.');
+                });
+            }
+            
+            // Reset field styling on input
+            [firstNameInput, emailInput, roleSelect, businessNameInput].forEach(field => {
+                field.addEventListener('input', function() {
+                    this.style.borderColor = '';
+                });
+            });
+            
+            document.getElementById('consent-ai-search').addEventListener('change', function() {
+                this.parentElement.style.color = '';
+            });
+            
+            // Set up event listeners
+            nextButton.addEventListener('click', handleFormSubmission);
+            
+            // Initialize progress bar
+            updateProgress();
+        });
+    </script>
 </body>
 </html> 

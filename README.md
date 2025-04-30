@@ -1,82 +1,80 @@
-# KYB Automation API Service
+# AI Onboarding Platform
 
-API service for Know Your Business (KYB) automation, integrating with Companies House and using AI analysis.
-
-## Setup
-
-1. Install dependencies:
-```
-npm install
-```
-
-2. Set up environment variables:
-```
-OPENAI_API_KEY=your_openai_api_key
-COMPANY_HOUSE_API_KEY=your_companies_house_api_key
-PORT=3010 (default)
-```
-
-3. Start the server:
-```
-npm start
-```
-
-## Deployment to Render.com
-
-This project includes configuration for simple deployment to Render.com:
-
-1. Push this repository to GitHub or GitLab
-
-2. In your Render.com dashboard:
-   - Go to "Blueprints"
-   - Click "New Blueprint Instance"
-   - Connect your Git repository
-   - Render will automatically detect the `render.yaml` configuration
-
-3. During setup, you'll need to provide:
-   - `OPENAI_API_KEY` - Your OpenAI API key
-   - `COMPANY_HOUSE_API_KEY` - Your Companies House API key
-   
-4. Once deployed, you can access your API at the URL provided by Render
-
-## API Endpoints
-
-- `POST /startKYB` - Start a KYB check for a business
-  - Request body: `{ "business_name": "Example Ltd" }`
-  - Response: `{ "job_id": "..." }`
-
-- `GET /jobStatus?job_id=YOUR_JOB_ID` - Check status of a KYB job
-  - Response: `{ "status": "pending|processing|completed|failed|action_required" }`
-
-- `GET /jobLog?job_id=YOUR_JOB_ID` - Get detailed results of a KYB job
-
-- `POST /continueKYB` - Provide additional information to continue a stuck KYB process
-  - Used when a job has status "action_required"
-  - Request body: `{ "job_id": "YOUR_JOB_ID", ... }`
-  - Three main ways to continue a job:
-    1. Provide a new company name: `{ "job_id": "...", "company_name": "Correct Name Ltd" }`
-       - This will restart the entire KYB process with the new name
-       - The system will attempt to find the CRN and website automatically
-    2. Provide a CRN directly: `{ "job_id": "...", "crn": "12345678" }`
-       - This will skip the AI lookup and go directly to Companies House
-    3. Provide both: `{ "job_id": "...", "company_name": "Name Ltd", "crn": "12345678" }`
-       - The CRN takes precedence and will be used directly
-
-### Search Capabilities
-
-- `GET /searchCompany?name=COMPANY_NAME` - Search for companies by name
-  - Returns top 5 matches from Companies House
-  - Response: `{ "results": [{ "company_name", "company_number", "company_status", "address" }, ...] }`
-
-- `GET /companyProfile?crn=COMPANY_NUMBER` - Get detailed profile for a specific CRN
-  - Response: Full company profile from Companies House API
+A modern onboarding system for business verification that leverages AI to enhance data collection and verification processes.
 
 ## Features
 
-- **Enhanced CRN Detection**: Multiple pattern matching algorithms to find UK Company Registration Numbers
-- **Fallback Methods**: Automatic fallback to Companies House direct search if OpenAI can't find the CRN
-- **Multiple Validation Attempts**: Uses multiple AI prompts if necessary
-- **Interactive Workflow**: Allows providing missing information for stuck processes
-- **Comprehensive Logging**: Each job tracks all steps and data collected
-- **Automatic Document Retrieval**: Downloads and stores incorporation documents
-- **Website Scraping**: Extracts contact details and validates against official records 
+- Multi-step onboarding wizard with smooth transitions
+- AI-powered data enhancement to fill in missing business information
+- Real-time validation with interactive feedback
+- Automatic business verification using Companies House and public records
+- Modern, responsive UI design
+
+## AI Data Enhancement
+
+The platform includes a special step to identify missing business information and uses OpenAI to search for and retrieve that data:
+
+1. The system analyzes the provided business information
+2. It identifies missing fields that would improve verification success
+3. With user consent, it sends a request to OpenAI to search for the missing information
+4. Retrieved data is presented to the user for approval before being added to their profile
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository
+   ```
+   git clone https://github.com/yourusername/onboarding-ai.git
+   cd onboarding-ai
+   ```
+
+2. Install dependencies
+   ```
+   npm install
+   ```
+
+3. Configure OpenAI API Key
+   - Rename `.env.example` to `.env`
+   - Add your OpenAI API key to the `.env` file
+   ```
+   OPENAI_API_KEY=your_api_key_here
+   ```
+
+4. Start the development server
+   ```
+   npm run dev
+   ```
+
+5. Open your browser and navigate to `http://localhost:3000`
+
+## System Architecture
+
+The platform consists of:
+
+- Front-end: HTML5, CSS3, Vanilla JavaScript with utility classes
+- Back-end: Node.js with Express
+- External Services: OpenAI API for business data enhancement
+
+## Implementation Details
+
+- The system uses a progressive enhancement approach for the onboarding flow
+- Business verification uses a combination of automated checks and AI assistance
+- Missing data is retrieved using carefully crafted prompts to OpenAI
+- All API calls include proper error handling and timeout management
+
+## Security Considerations
+
+- OpenAI API requests are made server-side to protect the API key
+- User consent is required before any AI data enhancement is performed
+- All enhanced data is presented to the user for verification before use
+- No sensitive business information is stored unless explicitly approved by the user
+
+## License
+
+MIT 

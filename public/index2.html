@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Verification</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Company Verification</h1>
+            <p class="subtitle">Streamlined verification for UK private limited companies</p>
+        </header>
+        
+        <!-- Initial Search Form -->
+        <div id="search-form" class="card">
+            <div class="form-content">
+                <h2>Let's Start Verification</h2>
+                <p>Enter your company's registered business name</p>
+                
+                <div class="form-group">
+                    <label for="business_name">Business Name</label>
+                    <input type="text" id="business_name" placeholder="e.g. Acme Ltd" required>
+                </div>
+                
+                <button id="start-verification-btn" class="btn-primary">
+                    Start Verification
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+                
+                <p class="note">We'll verify your business using Companies House and other public data sources</p>
+            </div>
+            
+            <div class="illustration">
+                <div class="search-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6b8afd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </div>
+                <p>Instant verification for UK private limited companies</p>
+            </div>
+        </div>
+        
+        <!-- Verification Progress -->
+        <div id="verification-progress" class="card hidden">
+            <div class="progress-content">
+                <h2 id="verifying-title">Verifying <span id="company-name"></span></h2>
+                <p>We're gathering and verifying your company information</p>
+                
+                <div class="progress-track">
+                    <!-- Step 1 -->
+                    <div class="progress-step" data-step="crn">
+                        <div class="progress-indicator active">
+                            <div class="loading-spinner"></div>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Company Registration Number</h3>
+                            <p class="status">Processing...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2 -->
+                    <div class="progress-step" data-step="company_details">
+                        <div class="progress-indicator">
+                            <div class="step-number">2</div>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Company Details</h3>
+                            <p class="status">Waiting...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3 -->
+                    <div class="progress-step" data-step="officers">
+                        <div class="progress-indicator">
+                            <div class="step-number">3</div>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Officers & Person of Significant Control</h3>
+                            <p class="status">Waiting...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 4 -->
+                    <div class="progress-step" data-step="website">
+                        <div class="progress-indicator">
+                            <div class="step-number">4</div>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Website Information</h3>
+                            <p class="status">Waiting...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 5 -->
+                    <div class="progress-step" data-step="incorporation">
+                        <div class="progress-indicator">
+                            <div class="step-number">5</div>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Incorporation Document</h3>
+                            <p class="status">Waiting...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 6 -->
+                    <div class="progress-step" data-step="final">
+                        <div class="progress-indicator">
+                            <div class="step-number">6</div>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Final Verification</h3>
+                            <p class="status">Waiting...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Detailed Progress Logs -->
+                <div class="progress-logs">
+                    <h3>Detailed Progress Logs</h3>
+                    <div id="progress-logs-container" class="logs-container">
+                        <p class="log-entry info">Starting verification process...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Card -->
+        <div id="verification-results" class="card hidden">
+            <div class="results-header">
+                <h2>Verification Results</h2>
+                <p>Verification complete for <span id="result-company-name"></span></p>
+            </div>
+            
+            <div class="results-content">
+                <!-- Verification Status Banner -->
+                <div class="verification-status">
+                    <span id="verification-status-badge" class="badge">Verified</span>
+                    <p id="verification-status-message">All verification checks passed successfully</p>
+                </div>
+
+                <!-- Company Information -->
+                <div class="result-section">
+                    <h3>Company Information</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <span class="label">Company Name</span>
+                            <span id="result-company-name-value" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">CRN</span>
+                            <span id="result-crn" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Company Type</span>
+                            <span id="result-company-type" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Status</span>
+                            <span id="result-company-status" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Incorporation Date</span>
+                            <span id="result-incorporation-date" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Jurisdiction</span>
+                            <span id="result-jurisdiction" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Business Age</span>
+                            <span id="result-business-age" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">SIC Codes</span>
+                            <span id="result-sic-codes" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Business Category</span>
+                            <span id="result-business-category" class="value"></span>
+                        </div>
+                        <div class="result-item full-width">
+                            <span class="label">Website</span>
+                            <span id="result-website" class="value"></span>
+                        </div>
+                        <div class="result-item full-width">
+                            <span class="label">Companies House Profile</span>
+                            <span id="result-ch-profile" class="value"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Previous Company Names Section (if any) -->
+                <div id="previous-names-section" class="result-section hidden">
+                    <h3>Previous Company Names</h3>
+                    <div id="result-previous-names" class="result-list"></div>
+                </div>
+                
+                <!-- Address Information -->
+                <div class="result-section">
+                    <h3>Address Information</h3>
+                    <div class="result-grid">
+                        <div class="result-item full-width">
+                            <span class="label">Registered Address</span>
+                            <span id="result-registered-address" class="value"></span>
+                        </div>
+                        <div class="result-item full-width">
+                            <span class="label">Business/Operational Address</span>
+                            <span id="result-business-address" class="value"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="result-section">
+                    <h3>Contact Information</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <span class="label">Phone</span>
+                            <span id="result-phone" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Email</span>
+                            <span id="result-email" class="value"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Directors Section -->
+                <div class="result-section">
+                    <h3>Directors</h3>
+                    <div id="result-officers" class="result-list">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Beneficial Owners Section -->
+                <div class="result-section">
+                    <h3>Beneficial Owners</h3>
+                    <div id="result-owners" class="result-list">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Account Information Section -->
+                <div class="result-section">
+                    <h3>Financial Information</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <span class="label">Last Accounts Date</span>
+                            <span id="result-last-accounts-date" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Last Accounts Type</span>
+                            <span id="result-last-accounts-type" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Next Accounts Due</span>
+                            <span id="result-next-accounts-due" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Last Members List Date</span>
+                            <span id="result-last-members-list" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Confirmation Statement Date</span>
+                            <span id="result-confirmation-statement-date" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Next Confirmation Statement Due</span>
+                            <span id="result-next-confirmation-due" class="value"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Validation Section -->
+                <div class="result-section">
+                    <h3>Validation Checks</h3>
+                    <div class="validation-grid">
+                        <div class="validation-item" id="crn-validation">
+                            <div class="validation-header">
+                                <span class="validation-title">CRN Validation</span>
+                                <span class="validation-status pending">Checking...</span>
+                            </div>
+                            <div class="validation-details">
+                                <div class="source-comparison">
+                                    <div class="source">
+                                        <span class="source-label">Companies House</span>
+                                        <span class="source-value" id="ch-crn-value"></span>
+                                    </div>
+                                    <div class="source">
+                                        <span class="source-label">Website</span>
+                                        <span class="source-value" id="website-crn-value">Not found</span>
+                                    </div>
+                                </div>
+                                <p class="validation-message" id="crn-validation-message"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="validation-item" id="address-validation">
+                            <div class="validation-header">
+                                <span class="validation-title">Address Validation</span>
+                                <span class="validation-status pending">Checking...</span>
+                            </div>
+                            <div class="validation-details">
+                                <p class="validation-message" id="address-validation-message"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="validation-item" id="website-validation">
+                            <div class="validation-header">
+                                <span class="validation-title">Website Data</span>
+                                <span class="validation-status pending">Checking...</span>
+                            </div>
+                            <div class="validation-details">
+                                <p class="validation-message" id="website-validation-message"></p>
+                                <!-- Add detailed website data section -->
+                                <div id="website-data-details" class="data-details hidden">
+                                    <h4>Found Website Data</h4>
+                                    <ul id="website-data-list" class="data-list"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add validation issues section -->
+                    <div id="validation-issues" class="data-details hidden">
+                        <h4>Validation Issues</h4>
+                        <ul id="validation-issues-list" class="data-list warning"></ul>
+                    </div>
+                </div>
+                
+                <!-- Additional Company Details -->
+                <div class="result-section">
+                    <h3>Additional Company Details</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <span class="label">Has Insolvency History</span>
+                            <span id="result-has-insolvency" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Has Charges</span>
+                            <span id="result-has-charges" class="value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Can File</span>
+                            <span id="result-can-file" class="value"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="start-new-verification" class="btn-primary">
+                    Verify Another Company
+                </button>
+            </div>
+        </div>
+        
+        <!-- Action Required Card -->
+        <div id="action-required" class="card hidden">
+            <div class="action-header">
+                <h2>Action Required</h2>
+                <p>We need additional information to complete verification</p>
+            </div>
+            
+            <div class="action-content">
+                <p id="action-message"></p>
+                
+                <div id="action-form" class="form-group">
+                    <!-- Will be dynamically populated based on required fields -->
+                </div>
+                
+                <button id="continue-verification-btn" class="btn-primary">
+                    Continue Verification
+                </button>
+            </div>
+        </div>
+        
+        <!-- Error Card -->
+        <div id="error-card" class="card hidden">
+            <div class="error-header">
+                <h2>Verification Error</h2>
+            </div>
+            
+            <div class="error-content">
+                <p id="error-message"></p>
+                <button id="try-again-btn" class="btn-primary">
+                    Try Again
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+    
+    <!-- Auto-start script for seamless onboarding flow -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if we have auto-start parameters from new UI
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Try to get business name and job ID from URL parameters or localStorage
+            let businessName = urlParams.get('business_name');
+            let jobId = urlParams.get('job_id');
+            let autoStart = urlParams.get('auto_start') === 'true';
+
+            // If not in URL parameters, check localStorage (fallback)
+            if (!businessName) {
+                businessName = localStorage.getItem('lastBusinessName');
+            }
+            if (!jobId) {
+                jobId = localStorage.getItem('lastJobId');
+            }
+            if (!autoStart) {
+                autoStart = localStorage.getItem('autoStartVerification') === 'true';
+            }
+
+            // If we have business name from previous screen
+            if (businessName) {
+                // Fill in the business name field
+                const businessNameInput = document.getElementById('business_name');
+                if (businessNameInput) {
+                    businessNameInput.value = businessName;
+                }
+                
+                // If auto start is requested, trigger verification
+                if (autoStart) {
+                    // Clear the auto-start flag to prevent accidental restarts
+                    localStorage.removeItem('autoStartVerification');
+                    
+                    // Give the page a moment to initialize before auto-starting
+                    setTimeout(function() {
+                        // Find and click the start verification button
+                        const startButton = document.getElementById('start-verification-btn');
+                        if (startButton) {
+                            startButton.click();
+                            console.log('Auto-starting verification for: ' + businessName);
+                        }
+                    }, 300);
+                }
+            }
+
+            // Add a check to periodically check job status and redirect to results page when completed
+            if (jobId) {
+                const statusCheckInterval = setInterval(function() {
+                    fetch(`/jobStatus?job_id=${jobId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'completed') {
+                                clearInterval(statusCheckInterval);
+                                
+                                // Wait a moment to allow the UI to reflect completion
+                                setTimeout(function() {
+                                    // Redirect to modern results page
+                                    window.location.href = `/verification-results.html?job_id=${jobId}`;
+                                }, 1500);
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error checking job status:", error);
+                        });
+                }, 3000); // Check every 3 seconds
+            }
+        });
+    </script>
+</body>
+</html> 

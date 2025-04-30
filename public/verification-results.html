@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Results | AI Onboarding Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #a5b4fc;
+            --secondary: #14b8a6;
+            --accent: #f43f5e;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --text: #0f172a;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.875rem;
+            color: var(--primary);
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: var(--text);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* Cards & Containers */
+        .card {
+            background-color: var(--background);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background-color: var(--surface);
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .status-banner {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-radius: var(--radius);
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .badge-error {
+            background-color: var(--error);
+            color: white;
+        }
+
+        /* Info Grid */
+        .info-section {
+            margin-bottom: 2rem;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .info-header {
+            background-color: var(--surface);
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0;
+            background-color: var(--background);
+        }
+
+        .info-item {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-item:nth-child(odd) {
+            border-right: 1px solid var(--border);
+        }
+
+        .info-item:last-child, .info-item:nth-last-child(2):nth-child(odd) {
+            border-bottom: none;
+        }
+
+        .info-label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: var(--text);
+            word-break: break-word;
+        }
+
+        .info-value a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .info-value a:hover {
+            text-decoration: underline;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-size: 1rem;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-item:nth-child(odd) {
+                border-right: none;
+            }
+            
+            .full-width {
+                grid-column: span 1;
+            }
+            
+            .info-item {
+                border-bottom: 1px solid var(--border);
+            }
+            
+            .info-item:last-child {
+                border-bottom: none;
+            }
+        }
+
+        /* Validation Issues */
+        .validation-issues {
+            padding: 0.5rem 0;
+        }
+
+        .validation-issue {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .validation-issue:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Company Verification</h1>
+            <p class="subtitle">Streamlined verification for UK private limited companies</p>
+        </header>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Verification Results</h2>
+                <p id="verification-subtitle">Verification complete for <span id="company-name">ALPHA MUSCLE GYM</span></p>
+            </div>
+            
+            <div class="card-body">
+                <!-- Status Banner -->
+                <div class="status-banner">
+                    <div class="badge badge-success">Verified</div>
+                    <p style="margin-bottom: 0;">All verification checks passed successfully</p>
+                </div>
+
+                <!-- Company Information -->
+                <div class="info-section">
+                    <div class="info-header">Company Information</div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Business Name</span>
+                            <span class="info-value" id="company-name-value">ALPHA MUSCLE GYM LIMITED</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Company Registration Number</span>
+                            <span class="info-value" id="crn-value">16104467</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Company Type</span>
+                            <span class="info-value" id="company-type-value">ltd</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Status</span>
+                            <span class="info-value" id="company-status-value">active</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Incorporation Date</span>
+                            <span class="info-value" id="incorporation-date-value">2024-11-27</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Jurisdiction</span>
+                            <span class="info-value" id="jurisdiction-value">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Company Age</span>
+                            <span class="info-value" id="business-age-value">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">SIC Codes</span>
+                            <span class="info-value" id="sic-codes-value">93130</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Industry</span>
+                            <span class="info-value" id="business-category-value">Sports and Recreation</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">VAT Number</span>
+                            <span class="info-value" id="vat-number-value">N/A</span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">Business Description</span>
+                            <span class="info-value" id="business-description-value">N/A</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="info-section">
+                    <div class="info-header">Contact Information</div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Phone Number</span>
+                            <span class="info-value" id="phone-value">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email Address</span>
+                            <span class="info-value" id="email-value">N/A</span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">Business URL</span>
+                            <span class="info-value" id="website-value">N/A</span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">Companies House Profile</span>
+                            <span class="info-value" id="ch-profile-value">
+                                <a href="https://find-and-update.company-information.service.gov.uk/company/16104467" target="_blank">
+                                    https://find-and-update.company-information.service.gov.uk/company/16104467
+                                </a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address Information -->
+                <div class="info-section">
+                    <div class="info-header">Address Information</div>
+                    <div class="info-grid">
+                        <div class="info-item full-width">
+                            <span class="info-label">Corporate/Registered Address</span>
+                            <span class="info-value" id="registered-address-value">123 Fitness Street, London, UK</span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">Operational Address</span>
+                            <span class="info-value" id="business-address-value">123 Fitness Street, London, UK</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Primary Representative Section -->
+                <div class="info-section" id="representative-section">
+                    <div class="info-header">Primary Representative</div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">First Name</span>
+                            <span class="info-value" id="rep-first-name">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Middle Name</span>
+                            <span class="info-value" id="rep-middle-name">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Last Name</span>
+                            <span class="info-value" id="rep-last-name">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Role / Title</span>
+                            <span class="info-value" id="rep-role">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Date of Birth</span>
+                            <span class="info-value" id="rep-dob">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Nationality</span>
+                            <span class="info-value" id="rep-nationality">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Ownership Percentage</span>
+                            <span class="info-value" id="rep-ownership">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Appointed On</span>
+                            <span class="info-value" id="rep-appointed">N/A</span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">Home Address</span>
+                            <span class="info-value" id="rep-address">N/A</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Directors/Officers Section -->
+                <div class="info-section">
+                    <div class="info-header">Directors</div>
+                    <div class="info-grid" id="directors-grid">
+                        <div class="info-item full-width">
+                            <span class="info-label">Director</span>
+                            <span class="info-value">John Smith</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Beneficial Owners Section -->
+                <div class="info-section">
+                    <div class="info-header">Stakeholders & Beneficial Owners</div>
+                    <div class="info-grid" id="owners-grid">
+                        <div class="info-item full-width">
+                            <span class="info-label">No beneficial owners found</span>
+                            <span class="info-value">N/A</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documents Section -->
+                <div class="info-section">
+                    <div class="info-header">Documents</div>
+                    <div class="info-grid">
+                        <div class="info-item full-width">
+                            <span class="info-label">Incorporation Document</span>
+                            <span class="info-value" id="incorporation-document-value">Not available</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Information -->
+                <div class="info-section">
+                    <div class="info-header">Financial Information</div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Last Accounts Date</span>
+                            <span class="info-value" id="last-accounts-date-value">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Last Accounts Type</span>
+                            <span class="info-value" id="last-accounts-type-value">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Next Accounts Due</span>
+                            <span class="info-value" id="next-accounts-due-value">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Last Members List Date</span>
+                            <span class="info-value" id="last-members-list-value">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Confirmation Statement Date</span>
+                            <span class="info-value" id="confirmation-date-value">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Next Confirmation Due</span>
+                            <span class="info-value" id="next-confirmation-value">N/A</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Details Section -->
+                <div class="info-section">
+                    <div class="info-header">Additional Details</div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Has Insolvency History</span>
+                            <span class="info-value" id="has-insolvency-value">No</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Has Charges</span>
+                            <span class="info-value" id="has-charges-value">No</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Can File</span>
+                            <span class="info-value" id="can-file-value">Yes</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verification Details -->
+                <div class="info-section">
+                    <div class="info-header">Verification Details</div>
+                    <div class="info-grid">
+                        <div class="info-item full-width">
+                            <span class="info-label">Verification Status</span>
+                            <span class="info-value" id="verification-status-value">Verified</span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">Verification Method</span>
+                            <span class="info-value" id="verification-method-value">AI-Powered Automatic Verification</span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">Verification Date</span>
+                            <span class="info-value" id="verification-date-value"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Validation Issues (visible only if issues exist) -->
+                <div class="info-section" id="validation-issues-section" style="display: none;">
+                    <div class="info-header">Validation Issues</div>
+                    <div class="info-grid">
+                        <div class="info-item full-width">
+                            <div id="validation-issues-list" class="validation-issues">
+                                <!-- Will be populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div style="margin-top: 2rem; display: flex; justify-content: space-between;">
+                    <a href="index.html" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                        </svg>
+                        Back to Dashboard
+                    </a>
+                    <button class="btn btn-primary" id="download-report">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get query parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const jobId = urlParams.get('job_id');
+            
+            if (jobId) {
+                // Fetch job status and populate the results
+                fetch(`/jobLog?job_id=${jobId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.result) {
+                            populateResults(data.result);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching verification results:', error);
+                    });
+            }
+            
+            // Download report button
+            document.getElementById('download-report').addEventListener('click', function() {
+                // Implement report download logic here
+                alert('Report download functionality would be implemented here.');
+            });
+        });
+        
+        function populateResults(result) {
+            console.log("Result data:", result); // Log the data for debugging
+            
+            // Set verification date
+            document.getElementById('verification-date-value').textContent = new Date().toLocaleDateString();
+            
+            // Company details
+            setElementTextContent('company-name', result.company_name || result.company?.name || 'N/A');
+            setElementTextContent('company-name-value', result.company_name || result.company?.name || 'N/A');
+            setElementTextContent('crn-value', result.company_registration_number || result.company?.registrationNumber || 'N/A');
+            setElementTextContent('company-type-value', result.company_type || result.company?.type || result.business?.legalEntity || 'N/A');
+            setElementTextContent('company-status-value', result.company_status || result.company?.companyStatus || 'N/A');
+            setElementTextContent('incorporation-date-value', result.incorporation_date || result.company?.dateOfCreation || 'N/A');
+            setElementTextContent('jurisdiction-value', result.jurisdiction || result.company?.jurisdiction || 'N/A');
+            
+            // Business details
+            setElementTextContent('business-age-value', result.business?.businessAge || 'N/A');
+            setElementTextContent('business-category-value', result.business?.category || 'N/A');
+            setElementTextContent('vat-number-value', result.business?.vat || 'N/A');
+            setElementTextContent('business-description-value', result.business?.serviceDescription || 'N/A');
+            
+            // Contact information
+            setElementTextContent('phone-value', result.contact_phone || result.company?.phone || 'N/A');
+            setElementTextContent('email-value', result.contact_email || result.company?.email || 'N/A');
+            
+            // Website
+            if (result.website_url || result.business?.url) {
+                const websiteUrl = result.website_url || result.business?.url;
+                const websiteElement = document.getElementById('website-value');
+                if (websiteElement) {
+                    websiteElement.innerHTML = `<a href="${websiteUrl}" target="_blank">${websiteUrl}</a>`;
+                }
+            }
+            
+            // SIC codes
+            if (result.company?.sicCodes && result.company.sicCodes.length > 0) {
+                setElementTextContent('sic-codes-value', result.company.sicCodes.join(', '));
+            } else if (result.nature_of_business) {
+                setElementTextContent('sic-codes-value', result.nature_of_business);
+            }
+            
+            // Address information
+            if (result.company?.address) {
+                const address = formatAddress(result.company.address);
+                setElementTextContent('registered-address-value', address);
+                
+                // Operational address (might be different)
+                const operationalAddress = result.company.operationalAddress 
+                    ? formatAddress(result.company.operationalAddress) 
+                    : address;
+                setElementTextContent('business-address-value', operationalAddress);
+            } else if (result.registered_address) {
+                setElementTextContent('registered-address-value', formatAddress(result.registered_address));
+                setElementTextContent('business-address-value', formatAddress(result.business_address || result.registered_address));
+            }
+            
+            // Companies House link
+            if (result.companies_house_profile_url) {
+                const chProfileElement = document.getElementById('ch-profile-value');
+                if (chProfileElement) {
+                    chProfileElement.innerHTML = `<a href="${result.companies_house_profile_url}" target="_blank">${result.companies_house_profile_url}</a>`;
+                }
+            }
+            
+            // Primary representative information
+            if (result.representative) {
+                // Show the representative section
+                const repSection = document.getElementById('representative-section');
+                if (repSection) repSection.style.display = 'block';
+                
+                // Populate representative fields
+                setElementTextContent('rep-first-name', result.representative.firstName || 'N/A');
+                setElementTextContent('rep-middle-name', result.representative.middleName || 'N/A');
+                setElementTextContent('rep-last-name', result.representative.lastName || 'N/A');
+                setElementTextContent('rep-role', result.representative.role || 'N/A');
+                setElementTextContent('rep-dob', result.representative.birthDate || 'N/A');
+                setElementTextContent('rep-nationality', result.representative.nationality || 'N/A');
+                setElementTextContent('rep-ownership', result.representative.ownershipPercentage || 'N/A');
+                setElementTextContent('rep-appointed', result.representative.appointed_on || 'N/A');
+                
+                // Format address if available
+                if (result.representative.address) {
+                    setElementTextContent('rep-address', 
+                        typeof result.representative.address === 'string' 
+                            ? result.representative.address 
+                            : formatAddress(result.representative.address));
+                }
+            } else {
+                // Hide the representative section if no data
+                const repSection = document.getElementById('representative-section');
+                if (repSection) repSection.style.display = 'none';
+            }
+            
+            // Directors
+            if (result.directors && result.directors.length > 0) {
+                const directorsGrid = document.getElementById('directors-grid');
+                if (directorsGrid) {
+                    // Clear existing content
+                    directorsGrid.innerHTML = '';
+                    
+                    // Add each director
+                    result.directors.forEach(director => {
+                        const directorElement = document.createElement('div');
+                        directorElement.className = 'info-item full-width';
+                        
+                        let directorName = typeof director === 'string' ? director : director.full_name || director.name;
+                        
+                        directorElement.innerHTML = `
+                            <span class="info-label">Director</span>
+                            <span class="info-value">${directorName || 'N/A'}</span>
+                        `;
+                        directorsGrid.appendChild(directorElement);
+                    });
+                }
+            }
+            
+            // Beneficial Owners
+            if (result.beneficial_owners && result.beneficial_owners.length > 0) {
+                const ownersGrid = document.getElementById('owners-grid');
+                if (ownersGrid) {
+                    // Clear existing content
+                    ownersGrid.innerHTML = '';
+                    
+                    // Add each beneficial owner
+                    result.beneficial_owners.forEach(owner => {
+                        const ownerElement = document.createElement('div');
+                        ownerElement.className = 'info-item full-width';
+                        
+                        // Format the owner information
+                        let ownerInfo = typeof owner === 'string' ? owner : owner.name;
+                        if (typeof owner === 'object' && owner.ownership_percent) {
+                            ownerInfo += ` (${owner.ownership_percent})`;
+                        }
+                        
+                        ownerElement.innerHTML = `
+                            <span class="info-label">Beneficial Owner</span>
+                            <span class="info-value">${ownerInfo}</span>
+                        `;
+                        ownersGrid.appendChild(ownerElement);
+                    });
+                }
+            } else if (result.company && result.company.ultimateBeneficialOwners && result.company.ultimateBeneficialOwners.length > 0) {
+                const ownersGrid = document.getElementById('owners-grid');
+                if (ownersGrid) {
+                    // Clear existing content
+                    ownersGrid.innerHTML = '';
+                    
+                    // Add each beneficial owner
+                    result.company.ultimateBeneficialOwners.forEach(owner => {
+                        const ownerElement = document.createElement('div');
+                        ownerElement.className = 'info-item full-width';
+                        
+                        // Format the owner information
+                        let ownerInfo = typeof owner === 'string' ? owner : owner.name;
+                        if (typeof owner === 'object' && owner.ownership_percent) {
+                            ownerInfo += ` (${owner.ownership_percent})`;
+                        }
+                        
+                        ownerElement.innerHTML = `
+                            <span class="info-label">Beneficial Owner</span>
+                            <span class="info-value">${ownerInfo}</span>
+                        `;
+                        ownersGrid.appendChild(ownerElement);
+                    });
+                }
+            }
+            
+            // Documents
+            if (result.incorporation_document_url || result.company?.incorporationDocument) {
+                const docUrl = result.incorporation_document_url || result.company.incorporationDocument;
+                const docElement = document.getElementById('incorporation-document-value');
+                if (docElement) {
+                    docElement.innerHTML = `<a href="${docUrl}" target="_blank">View Incorporation Document</a>`;
+                }
+            }
+            
+            // Financial Information
+            if (result.company) {
+                // Last accounts date
+                if (result.company.lastAccountsDate) {
+                    setElementTextContent('last-accounts-date-value', result.company.lastAccountsDate);
+                }
+                
+                // Last accounts type
+                if (result.company.lastAccountsType) {
+                    setElementTextContent('last-accounts-type-value', result.company.lastAccountsType);
+                }
+                
+                // Next accounts due
+                if (result.company.nextAccountsDue) {
+                    setElementTextContent('next-accounts-due-value', result.company.nextAccountsDue);
+                }
+                
+                // Last members list date
+                if (result.company.lastFullMembersListDate) {
+                    setElementTextContent('last-members-list-value', result.company.lastFullMembersListDate);
+                }
+                
+                // Confirmation statement date
+                if (result.company.confirmationStatementDate) {
+                    setElementTextContent('confirmation-date-value', result.company.confirmationStatementDate);
+                }
+                
+                // Next confirmation due
+                if (result.company.nextConfirmationDue) {
+                    setElementTextContent('next-confirmation-value', result.company.nextConfirmationDue);
+                }
+                
+                // Additional details
+                setElementTextContent('has-insolvency-value', result.company.hasInsolvencyHistory ? 'Yes' : 'No');
+                setElementTextContent('has-charges-value', result.company.hasCharges ? 'Yes' : 'No');
+                setElementTextContent('can-file-value', result.company.canFile ? 'Yes' : 'No');
+            }
+            
+            // Verification details
+            setElementTextContent('verification-status-value', result.verification_status || 'Verified');
+            
+            // Validation issues
+            if (result.validation_issues && result.validation_issues.length > 0) {
+                const validationIssuesSection = document.getElementById('validation-issues-section');
+                const validationIssuesList = document.getElementById('validation-issues-list');
+                
+                if (validationIssuesSection && validationIssuesList) {
+                    validationIssuesSection.style.display = 'block';
+                    
+                    // Clear existing content
+                    validationIssuesList.innerHTML = '';
+                    
+                    // Add each validation issue
+                    result.validation_issues.forEach(issue => {
+                        const issueElement = document.createElement('div');
+                        issueElement.className = 'validation-issue';
+                        issueElement.innerHTML = `
+                            <div class="badge badge-warning" style="margin-right: 0.5rem;">Warning</div>
+                            <span>${issue}</span>
+                        `;
+                        validationIssuesList.appendChild(issueElement);
+                    });
+                }
+            }
+        }
+        
+        function setElementTextContent(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = value;
+            }
+        }
+        
+        function formatAddress(addressObj) {
+            if (!addressObj) return 'N/A';
+            
+            // Handle string addresses
+            if (typeof addressObj === 'string') return addressObj;
+            
+            // Handle object addresses
+            const parts = [];
+            if (addressObj.premises) parts.push(addressObj.premises);
+            if (addressObj.address_line_1) parts.push(addressObj.address_line_1);
+            if (addressObj.address_line_2) parts.push(addressObj.address_line_2);
+            if (addressObj.locality) parts.push(addressObj.locality);
+            if (addressObj.region) parts.push(addressObj.region);
+            if (addressObj.postal_code) parts.push(addressObj.postal_code);
+            if (addressObj.country) parts.push(addressObj.country);
+            
+            return parts.length > 0 ? parts.join(', ') : 'N/A';
+        }
+    </script>
+</body>
+</html> 
